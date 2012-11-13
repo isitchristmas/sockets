@@ -23,7 +23,7 @@ var app = express()
   , io = require('socket.io').listen(server);
 
 app.configure(function(){
-  app.set('port', process.env.PORT || 3000);
+  app.set('port', process.env.PORT || 80);
 });
 
 io.configure(function () {
@@ -33,6 +33,12 @@ io.configure(function () {
 io.sockets.on('connection', function (socket) {
   welcome(socket);
 });
+
+// testing endpoint
+app.get('/', function(req, res) {
+  res.send("Up!");
+});
+
 
 // Start server
 
