@@ -1,9 +1,11 @@
 function welcome(client) {
-  client.emit('identity', {identity: client.id});
+  // 1) acknowledge
+  client.emit('merry christmas');
   
-  client.on('acknowledged', function (data) {
-    console.log("acknowledged: " + p(data));
-  });
+  // re-broadcast motion events to everyone else
+  client.on('motion', function(data) {
+    client.broadcast.emit('motion', data)
+  })
 }
 
 function p(object) {
