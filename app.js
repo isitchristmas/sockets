@@ -1,29 +1,41 @@
-function main(req, res) {
-  res.send("Main");
+function welcome(client) {
+  client.emit('identity', {identity: client.id});
+  
+  client.on('acknowledged', function (data) {
+    console.log("acknowledged: " + p(data));
+  });
+}
+
+function p(object) {
+  return JSON.stringify(object, null, 4);
 }
 
 
-/****** */
+/****** setup */
 
 var express = require('express')
-  , http = require('http')
-  , path = require('path');
+  , http = require('http');
 
-var app = express();
+var app = express()
+  , server = http.createServer(app)
+  , io = require('socket.io').listen(server);
 
 app.configure(function(){
-  app.set('port', process.env.PORT || 4000);
-  app.use(express.logger('dev'));
-  app.use(app.router);
+  app.set('port', process.env.PORT || 3000);
 });
 
-app.get('/', main);
+io.configure(function () {
+  io.set('transports', ['websocket']);
+});
 
+io.sockets.on('connection', function (socket) {
+  welcome(socket);
+});
 
 // Start server
 
 var startServer = function() {
-  http.createServer(app).listen(app.get('port'), function(){
+  server.listen(app.get('port'), function(){
     console.log("Express %s server listening on port %s", app.settings.env, app.get('port'));
   });
 }
