@@ -4,12 +4,16 @@ function welcome(client) {
   
   // re-broadcast motion events to everyone else
   client.on('motion', function(data) {
-    client.broadcast.emit('motion', data)
-  })
-}
+    client.broadcast.emit('motion', data);
+  });
 
-function p(object) {
-  return JSON.stringify(object, null, 4);
+  client.on('click', function(data) {
+    client.broadcast.emit('click', data);
+  });
+
+  client.on('leave', function(data) {
+    client.broadcast.emit('leave', data);
+  });
 }
 
 
