@@ -11,8 +11,8 @@ function welcome(client) {
     client.broadcast.emit('click', data);
   });
 
-  client.on('leave', function(data) {
-    client.broadcast.emit('leave', data);
+  client.on('disconnect', function() {
+    client.broadcast.emit('leave', client.id);
   });
 }
 
@@ -32,6 +32,7 @@ app.configure(function(){
 
 io.configure(function () {
   io.set('transports', ['websocket']);
+  io.set('log level', 0);
 });
 
 io.sockets.on('connection', function (socket) {
