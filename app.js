@@ -32,20 +32,15 @@ app.configure(function(){
 
 io.configure(function () {
   io.set('transports', ['websocket']);
-  io.set('log level', 0);
+  io.set('log level', (process.env.LOG ? process.env.LOG : 0));
 });
 
-io.sockets.on('connection', function (socket) {
-  welcome(socket);
-});
-
-// testing endpoint
-app.get('/', function(req, res) {
-  res.send("Up!");
-});
+// websockets and http endpoints
+io.sockets.on('connection', welcome);
+app.get('/', function(req, res) {res.send("Up!");}); // testing
 
 
-// Start server
+/**** start server ****/
 
 var startServer = function() {
   server.listen(app.get('port'), function(){
