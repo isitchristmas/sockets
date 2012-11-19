@@ -27,14 +27,25 @@ var app = express()
   , server = http.createServer(app)
   , io = require('socket.io').listen(server);
 
-// var authed = function(err) {console.log(arguments)};
-// var pub    = redis.createClient(6379, 'localhost')
-//   , sub    = redis.createClient(6379, 'localhost')
-//   , client = redis.createClient(6379, 'localhost');
+// var auths = 0;
+// var authed = function(err) {console.log(arguments); auths += 1; if (auths >= 3) doneAuth()};
+// var doneAuth = function() {};
+// var host = 'localhost'
+//   , port = 6379
+//   , password = 'password';
+// var pub    = redis.createClient(port, host, {no_ready_check: true})
+//   , sub    = redis.createClient(port, host, {no_ready_check: true})
+//   , client = redis.createClient(port, host, {no_ready_check: true});
+// pub.auth(password, authed);
+// sub.auth(password, authed);
+// client.auth(password, authed);
+// var RedisStore = require('socket.io/lib/stores/redis');
+// io.set('store', new RedisStore({
+//   redisPub : pub
+// , redisSub : sub
+// , redisClient : client
+// }));
 
-  // pub.auth("", authed);
-  // sub.auth("", authed);
-  // client.auth("", authed);
 
 app.configure(function() {
   app.set('port', process.env.PORT || 80);
@@ -43,13 +54,6 @@ app.configure(function() {
 io.configure(function () {
   io.set('transports', ['websocket']);
   io.set('log level', (process.env.LOG ? process.env.LOG : 0));
-
-  // var RedisStore = require('socket.io/lib/stores/redis');
-  // io.set('store', new RedisStore({
-  //   redisPub : pub
-  // , redisSub : sub
-  // , redisClient : client
-  // }));
 });
 
 io.sockets.on('connection', welcome);
