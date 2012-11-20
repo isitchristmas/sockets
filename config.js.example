@@ -1,0 +1,24 @@
+// copy this file to config.js, and change the values below to real ones
+
+module.exports = {
+
+  development: {
+    store: 'memory',
+
+    redis: {
+      port: 6379,
+      host: "localhost",
+      password: null 
+    }
+  }, 
+
+  production: {
+    store: 'memory',
+
+    redis: {
+      port: 6379,
+      host: "localhost",
+      password: null 
+    }
+  }
+}

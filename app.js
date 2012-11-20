@@ -21,31 +21,32 @@ function welcome(client) {
 
 var express = require('express')
   , http = require('http')
-  , redis = require('redis');
+  , redis = require('redis')
+  , RedisStore = require('socket.io/lib/stores/redis');
 
 var app = express()
+  , config = require('./config')[app.get('env')]
   , server = http.createServer(app)
   , io = require('socket.io').listen(server);
 
-// var auths = 0;
-// var authed = function(err) {console.log(arguments); auths += 1; if (auths >= 3) doneAuth()};
-// var doneAuth = function() {};
-// var host = 'localhost'
-//   , port = 6379
-//   , password = 'password';
-// var pub    = redis.createClient(port, host, {no_ready_check: true})
-//   , sub    = redis.createClient(port, host, {no_ready_check: true})
-//   , client = redis.createClient(port, host, {no_ready_check: true});
-// pub.auth(password, authed);
-// sub.auth(password, authed);
-// client.auth(password, authed);
-// var RedisStore = require('socket.io/lib/stores/redis');
-// io.set('store', new RedisStore({
-//   redisPub : pub
-// , redisSub : sub
-// , redisClient : client
-// }));
+if (config.store == 'redis') {
+  var pub    = redis.createClient(config.redis.port, config.redis.host)
+    , sub    = redis.createClient(config.redis.port, config.redis.host)
+    , client = redis.createClient(config.redis.port, config.redis.host);
 
+  if (config.redis.password) {
+    pub.auth(config.redis.password);
+    sub.auth(config.redis.password);
+    client.auth(config.redis.password);
+  }
+
+  io.set('store', new RedisStore({
+    redis: redis
+  , redisPub: pub
+  , redisSub: sub
+  , redisClient: client
+  }));
+}
 
 app.configure(function() {
   app.set('port', process.env.PORT || 80);
@@ -57,7 +58,7 @@ io.configure(function () {
 });
 
 io.sockets.on('connection', welcome);
-app.get('/', function(req, res) {res.send("Up!");}); // testing
+app.get('/', function(req, res) {res.send("Up!");});
 
 
 /**** start server ****/

@@ -1,9 +1,12 @@
 {
-  "name": "isitchristmas",
+  "name": "sockets",
   "version": "0.0.5",
   "private": true,
 
-  "subdomain": "isitchristmas",
+  "subdomain": "iic_sockets",
+  "domains": [
+    "sockets.isitchristmas.com"
+  ],
   "engines": {"node": "0.8.x"},
 
   "scripts": {
