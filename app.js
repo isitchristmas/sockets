@@ -1,11 +1,14 @@
 function welcome(client) {
 
-  // re-broadcast lots of events to everyone else
-
-  client.on('join', function(data) {
-    client.broadcast.emit('join', data);
+  client.on('arrive', function(data) {
+    client.broadcast.emit('arrive', data);
   });
-  
+
+  // directed message to a client that just joined
+  client.on('here', function(data) {
+    io.sockets.socket(data.to).emit('here', data);
+  });
+
   client.on('motion', function(data) {
     client.volatile.broadcast.emit('motion', data);
   });
