@@ -7,7 +7,7 @@ function welcome(client) {
   });
   
   client.on('motion', function(data) {
-    client.broadcast.emit('motion', data);
+    client.volatile.broadcast.emit('motion', data);
   });
 
   client.on('click', function(data) {
