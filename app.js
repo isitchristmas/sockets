@@ -20,6 +20,10 @@ function welcome(client) {
   client.on('disconnect', function() {
     client.broadcast.emit('leave', client.id);
   });
+
+  client.on('manual disconnect', function(id) {
+    client.broadcast.emit('leave', id);
+  });
 }
 
 
