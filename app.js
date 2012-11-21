@@ -1,8 +1,12 @@
 function welcome(client) {
   // 1) acknowledge
   client.emit('merry christmas');
+
+  client.on('join', function(data) {
+    client.broadcast.emit('join', data);
+  });
   
-  // re-broadcast motion events to everyone else
+  // re-broadcast lots of events to everyone else
   client.on('motion', function(data) {
     client.broadcast.emit('motion', data);
   });
