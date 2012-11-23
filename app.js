@@ -13,10 +13,6 @@ var welcome = function(client) {
     client.volatile.broadcast.emit('motion', data);
   });
 
-  client.on('click', function(data) {
-    client.broadcast.emit('click', data);
-  });
-
   client.on('disconnect', function() {
     client.broadcast.emit('leave', client.id);
   });
