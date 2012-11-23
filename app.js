@@ -27,7 +27,17 @@ var welcome = function(client) {
 }
 
 var dashboard = function(req, res) {
-  res.send("Admin: " + serverId);
+  var response = "";
+  var clients = io.connected;
+  
+  response += "Admin: " + serverId + "\n\n";
+  response += "Connected clients:\n\n";
+  for (client in clients) {
+    response += "[" + client + "]" + "\n";
+  }
+
+  res.set({'Content-Type': 'text/plain'});
+  res.send(response);
 }
 
 
