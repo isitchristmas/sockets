@@ -73,7 +73,8 @@ app.configure(function() {
 });
 
 io.configure(function () {
-  io.set('transports', ['websocket']);
+  io.set('transports', ['websocket', 'flashsocket']);
+  io.set('flash policy port', -1);
   io.set('log level', (process.env.LOG ? process.env.LOG : 0));
 });
 
