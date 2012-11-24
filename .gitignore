@@ -1,1 +1,9 @@
 /config.js
+
+/issues.txt
+
+# until proxy is unneeded
+/proxy.js
+/node_modules/policyfile
+/node_modules/http-proxy
+/node_modules/.bin/node-http-proxy
