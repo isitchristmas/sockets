@@ -44,10 +44,15 @@ var express = require('express')
   , redis = require('redis')
   , RedisStore = require('socket.io/lib/stores/redis');
 
+var env = (process.env.NODE_ENV || "development")
+  , port = parseInt(process.env.PORT || 80)
+  , config = require('./config')[env];
+
 var app = express()
-  , config = require('./config')[app.get('env')]
   , server = http.createServer(app)
-  , io = require('socket.io').listen(server);
+  , io = require('socket.io').listen(server, {
+    'flash policy port': -1
+  });
 
 if (config.store == 'redis') {
   var pub    = redis.createClient(config.redis.port, config.redis.host)
@@ -69,11 +74,12 @@ if (config.store == 'redis') {
 }
 
 app.configure(function() {
-  app.set('port', process.env.PORT || 80);
+  app.set('port', port);
+  app.enable('trust proxy');
 });
 
 io.configure(function () {
-  io.set('flash policy port', -1);
+  // io.set('flash policy port', -1);
   io.set('transports', ['websocket', 'flashsocket']);
   io.set('log level', (process.env.LOG ? process.env.LOG : 0));
 });
