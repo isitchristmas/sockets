@@ -1,59 +1,59 @@
-var welcome = function(client) {
-
-  client.on('arrive', function(data) {
-    client.broadcast.emit('arrive', data);
+var welcome = function(connection) {
+  connection.on('data', function(message) {
+    console.log("data received: " + message);
+    connection.write("received");
   });
+
+  connection.on('close', function() {
+    console.log("connection closed: " + connection);
+  });
+};
+
+  // client.on('arrive', function(data) {
+  //   client.broadcast.emit('arrive', data);
+  // });
 
   // directed message to a client that just joined
-  client.on('here', function(data) {
-    io.sockets.socket(data.to).emit('here', data);
-  });
+  // client.on('here', function(data) {
+  //   io.sockets.socket(data.to).emit('here', data);
+  // });
 
-  client.on('motion', function(data) {
-    client.volatile.broadcast.emit('motion', data);
-  });
+  // client.on('motion', function(data) {
+  //   client.volatile.broadcast.emit('motion', data);
+  // });
 
-  client.on('disconnect', function() {
-    client.broadcast.emit('leave', client.id);
-  });
+  // client.on('disconnect', function() {
+  //   client.broadcast.emit('leave', client.id);
+  // });
 
-  client.on('manual disconnect', function(id) {
-    client.broadcast.emit('leave', id);
-  });
-}
-
-var dashboard = function(req, res) {
-  var response = "";
-  var clients = io.connected;
-  
-  response += "Admin: " + serverId + "\n\n";
-  response += "Connected clients:\n\n";
-  for (client in clients) {
-    response += "[" + client + "]" + "\n";
-  }
-
-  res.set({'Content-Type': 'text/plain'});
-  res.send(response);
-}
+  // client.on('manual disconnect', function(id) {
+  //   client.broadcast.emit('leave', id);
+  // });
+// }
 
 
 /****** setup */
 
 var express = require('express')
   , http = require('http')
-  , redis = require('redis')
-  , RedisStore = require('socket.io/lib/stores/redis');
+  , sockjs = require('sockjs')
+  , redis = require('redis');
 
+// server environment
 var env = (process.env.NODE_ENV || "development")
   , port = parseInt(process.env.PORT || 80)
   , config = require('./config')[env];
 
+// basic HTTP server
 var app = express()
-  , server = http.createServer(app)
-  , io = require('socket.io').listen(server, {
-    'flash policy port': -1
-  });
+  , server = http.createServer(app);
 
+// setup sockjs
+var sockets = sockjs.createServer();
+sockets.on('connection', welcome);
+sockets.installHandlers(server);
+
+// initialize redis
 if (config.store == 'redis') {
   var pub    = redis.createClient(config.redis.port, config.redis.host)
     , sub    = redis.createClient(config.redis.port, config.redis.host)
@@ -64,31 +64,16 @@ if (config.store == 'redis') {
     sub.auth(config.redis.password);
     client.auth(config.redis.password);
   }
-
-  io.set('store', new RedisStore({
-    redis: redis
-  , redisPub: pub
-  , redisSub: sub
-  , redisClient: client
-  }));
 }
 
+// configure and start server
 app.configure(function() {
   app.set('port', port);
   app.enable('trust proxy');
 });
 
-io.configure(function () {
-  // io.set('flash policy port', -1);
-  io.set('transports', ['websocket', 'flashsocket']);
-  io.set('log level', (process.env.LOG ? process.env.LOG : 0));
-});
-
-io.sockets.on('connection', welcome);
 app.get('/', function(req, res) {res.send("Up!");});
-app.get('/dashboard', dashboard);
-
-/**** start server ****/
+// app.get('/dashboard', dashboard);
 
 var startServer = function() {
   server.listen(app.get('port'), function(){

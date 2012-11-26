@@ -1,11 +1,11 @@
 {
-  "name": "sockets",
+  "name": "sockets_staging",
   "version": "0.2.3",
   "private": true,
 
-  "subdomain": "iic_sockets",
+  "subdomain": "iic_sockets_staging",
   "domains": [
-    "sockets.isitchristmas.com"
+    "staging.sockets.isitchristmas.com"
   ],
   "engines": {"node": "0.8.x"},
 
@@ -17,6 +17,6 @@
     "express": "3.x",
     "reloader": "*",
     "redis": "*",
-    "socket.io": "0.9.11"
+    "sockjs": "*"
   }
 }
