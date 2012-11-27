@@ -59,6 +59,21 @@ if (config.store == 'redis') {
     , sub    = redis.createClient(config.redis.port, config.redis.host)
     , client = redis.createClient(config.redis.port, config.redis.host);
 
+  ["error", "end", "connect", "ready"].forEach(function(message) {
+
+    pub.on(message, function () {
+      console.log("[" + serverId + "] redis pub: " + message);
+    });
+
+    sub.on(message, function () {
+      console.log("[" + serverId + "] redis sub: " + message);
+    });
+
+    client.on(message, function () {
+      console.log("[" + serverId + "] redis client: " + message);
+    });
+  });
+
   if (config.redis.password) {
     pub.auth(config.redis.password);
     sub.auth(config.redis.password);
