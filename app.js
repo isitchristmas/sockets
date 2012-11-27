@@ -105,22 +105,6 @@ if (config.store == 'redis') {
   }
 }
 
-// configure and start server
-app.configure(function() {
-  app.set('port', port);
-  app.enable('trust proxy');
-});
-
-app.get('/', function(req, res) {res.send("Up!");});
-// app.get('/dashboard', dashboard);
-
-var startServer = function() {
-  server.listen(app.get('port'), function(){
-    console.log("Express %s server listening on port %s", app.settings.env, app.get('port'));
-  });
-}
-
-
 /* utils */
 
 var crypto = require('crypto');
@@ -149,9 +133,24 @@ var serverId = generateId();
 
 /** run servers **/
 
+// configure and start server
+app.configure(function() {
+  app.set('port', port);
+  app.enable('trust proxy');
+});
+
 var sockets = sockjs.createServer({log: socket_log});
 sockets.on('connection', welcome);
-sockets.installHandlers(server);
+sockets.installHandlers(server, {prefix: '/christmas'});
+
+app.get('/', function(req, res) {res.send("Up!");});
+// app.get('/dashboard', dashboard);
+
+var startServer = function() {
+  server.listen(app.get('port'), function(){
+    console.log("Express %s server listening on port %s", app.settings.env, app.get('port'));
+  });
+}
 
 app.configure('development', function() {
   app.use(express.errorHandler());
