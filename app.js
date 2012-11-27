@@ -65,6 +65,21 @@ if (config.store == 'redis') {
     client.auth(config.redis.password);
   }
 
+  ["error", "end", "connect", "ready"].forEach(function(message) {
+
+    pub.on(message, function () {
+      console.log("Redis pub: " + message);
+    });
+
+    sub.on(message, function () {
+      console.log("Redis sub: " + message);
+    });
+
+    client.on(message, function () {
+      console.log("Redis client: " + message);
+    });
+  });
+
   io.set('store', new RedisStore({
     redis: redis
   , redisPub: pub
