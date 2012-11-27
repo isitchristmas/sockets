@@ -15,7 +15,7 @@ var welcome = function(connection) {
   });
 
   connection.on('close', function() {
-    events["leave"]({id: connection._user_id});
+    events["leave"](connection, {id: connection._user_id});
   });
 };
 
@@ -48,7 +48,7 @@ on('here', function(connection, data) {
 
 on('leave', function(connection, data) {
   delete connections[data.id];
-  rebroadcast(connection, data)
+  broadcast("leave", data.id, data);
 });
 
 // logging

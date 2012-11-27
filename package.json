@@ -1,11 +1,11 @@
 {
   "name": "sockets-staging",
-  "version": "0.2.6",
+  "version": "0.2.9",
   "private": true,
 
   "subdomain": "iic_sockets_staging",
   "domains": [
-    "staging.sockets.isitchristmas.com"
+    
   ],
   "engines": {"node": "0.8.x"},
 
