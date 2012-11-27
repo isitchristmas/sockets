@@ -1,35 +1,63 @@
+var events = {};
+function on(event, func) {events[event] = func;}
+
+var connections = {};
+
 var welcome = function(connection) {
+  // generate id
+  connection._user_id = generateId();
+  connections[connection._user_id] = connection;
+  send("hello", connection);
+
   connection.on('data', function(message) {
-    console.log("data received: " + message);
-    connection.write("received");
+    var data = JSON.parse(message);
+    events[data._event](connection, data);
   });
 
   connection.on('close', function() {
-    console.log("connection closed: " + connection);
+    events["leave"]({id: connection._user_id});
   });
 };
 
-  // client.on('arrive', function(data) {
-  //   client.broadcast.emit('arrive', data);
-  // });
+var send = function(event, connection, object) {
+  object = object || {};
+  object._event = event;
+  object._user_id = connection._user_id;
+  connection.write(JSON.stringify(object));
+}
 
-  // directed message to a client that just joined
-  // client.on('here', function(data) {
-  //   io.sockets.socket(data.to).emit('here', data);
-  // });
+var broadcast = function(event, from, object) {
+  for (id in connections) {
+    if (id != from)
+      send(event, connections[id], object);
+  }
+}
 
-  // client.on('motion', function(data) {
-  //   client.volatile.broadcast.emit('motion', data);
-  // });
+var rebroadcast = function(connection, data) {
+  broadcast(data._event, connection._user_id, data);
+}
 
-  // client.on('disconnect', function() {
-  //   client.broadcast.emit('leave', client.id);
-  // });
+// events 
 
-  // client.on('manual disconnect', function(id) {
-  //   client.broadcast.emit('leave', id);
-  // });
-// }
+on('arrive', rebroadcast);
+on('motion', rebroadcast);
+
+on('here', function(connection, data) {
+  send('here', connections[data.to], data);
+});
+
+on('leave', function(connection, data) {
+  delete connections[data.id];
+  rebroadcast(connection, data)
+});
+
+// logging
+
+var severities = {error: 1, info: 2, debug: 3};
+var socket_log = function(severity, message) {
+  if (log_level >= severities[severity])
+    console.log("[" + serverId + "][" + severity + "] " + message);
+}
 
 
 /****** setup */
@@ -42,16 +70,13 @@ var express = require('express')
 // server environment
 var env = (process.env.NODE_ENV || "development")
   , port = parseInt(process.env.PORT || 80)
-  , config = require('./config')[env];
+  , config = require('./config')[env]
+  , log_level = (process.env.LOG || 1); // default to error msgs
 
 // basic HTTP server
 var app = express()
   , server = http.createServer(app);
 
-// setup sockjs
-var sockets = sockjs.createServer();
-sockets.on('connection', welcome);
-sockets.installHandlers(server);
 
 // initialize redis
 if (config.store == 'redis') {
@@ -60,17 +85,16 @@ if (config.store == 'redis') {
     , client = redis.createClient(config.redis.port, config.redis.host);
 
   ["error", "end", "connect", "ready"].forEach(function(message) {
-
     pub.on(message, function () {
-      console.log("[" + serverId + "] redis pub: " + message);
+      console.log("[" + serverId + "][redis] pub: " + message);
     });
 
     sub.on(message, function () {
-      console.log("[" + serverId + "] redis sub: " + message);
+      console.log("[" + serverId + "][redis] sub: " + message);
     });
 
     client.on(message, function () {
-      console.log("[" + serverId + "] redis client: " + message);
+      console.log("[" + serverId + "][redis] client: " + message);
     });
   });
 
@@ -96,17 +120,6 @@ var startServer = function() {
   });
 }
 
-app.configure('development', function() {
-  app.use(express.errorHandler());
-
-  require('reloader')({
-    watchModules: true,
-    onReload: startServer
-  });
-});
-
-app.configure('production', startServer);
-
 
 /* utils */
 
@@ -131,3 +144,22 @@ var generateId = function() {
 };
 
 var serverId = generateId();
+
+
+
+/** run servers **/
+
+var sockets = sockjs.createServer({log: socket_log});
+sockets.on('connection', welcome);
+sockets.installHandlers(server);
+
+app.configure('development', function() {
+  app.use(express.errorHandler());
+
+  require('reloader')({
+    watchModules: true,
+    onReload: startServer
+  });
+});
+
+app.configure('production', startServer);
