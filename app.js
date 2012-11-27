@@ -43,7 +43,8 @@ on('arrive', rebroadcast);
 on('motion', rebroadcast);
 
 on('here', function(connection, data) {
-  send('here', connections[data.to], data);
+  if (connections[data.to])
+    send('here', connections[data.to], data);
 });
 
 on('leave', function(connection, data) {
