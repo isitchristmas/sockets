@@ -106,15 +106,15 @@ if (config.redis.enabled) {
 
   ["error", "end", "connect", "ready"].forEach(function(message) {
     pub.on(message, function () {
-      log("info", "[redis] pub: " + message);
+      log("warn", "[redis] pub: " + message);
     });
 
     sub.on(message, function () {
-      log("info", "[redis] sub: " + message);
+      log("warn", "[redis] sub: " + message);
     });
 
     client.on(message, function () {
-      log("info", "[redis] client: " + message);
+      log("warn", "[redis] client: " + message);
     });
   });
 
@@ -127,7 +127,7 @@ if (config.redis.enabled) {
 
 // logging
 
-var severities = {error: 1, info: 2, debug: 3, err: 1};
+var severities = {error: 1, warn: 1, info: 2, debug: 3};
 var logger, winston, log;
 if (config.logentries) {
   logger = require('node-logentries').logger({
