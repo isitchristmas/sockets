@@ -170,7 +170,7 @@ app.get('/', function(req, res) {res.send("Up!");});
 
 var startServer = function() {
   server.listen(app.get('port'), function(){
-    log("warn", "Express %s server listening on port %s", app.settings.env, app.get('port'));
+    log("warn", "Express " + app.settings.env + " server listening on port " + app.get('port'));
   });
 }
 
