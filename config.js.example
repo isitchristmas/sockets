@@ -1,24 +1,29 @@
 // copy this file to config.js, and change the values below to real ones
 
+// redis - redis login details (optional)
+// logentries: token for logentries.com account (optional)
+
 module.exports = {
 
   development: {
-    store: 'memory',
-
     redis: {
+      enabled: true,
       port: 6379,
       host: "localhost",
       password: null 
-    }
+    },
+
+    logentries: null
   }, 
 
   production: {
-    store: 'memory',
-
     redis: {
+      enabled: true,
       port: 6379,
       host: "localhost",
       password: null 
-    }
+    },
+
+    logentries: null
   }
 }

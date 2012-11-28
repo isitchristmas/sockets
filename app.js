@@ -52,6 +52,7 @@ on('leave', function(connection, data) {
   broadcast("leave", data.id, data);
 });
 
+
 // logging
 
 var severities = {error: 1, info: 2, debug: 3};
@@ -80,7 +81,7 @@ var app = express()
 
 
 // initialize redis
-if (config.store == 'redis') {
+if (config.redis.enabled) {
   var pub    = redis.createClient(config.redis.port, config.redis.host)
     , sub    = redis.createClient(config.redis.port, config.redis.host)
     , client = redis.createClient(config.redis.port, config.redis.host);
@@ -108,6 +109,8 @@ if (config.store == 'redis') {
 
 /* utils */
 
+// todo: move this into its own file
+
 var crypto = require('crypto');
 var generateId = function() {
   var rand = new Buffer(15); // multiple of 3 for base64
@@ -132,20 +135,24 @@ var serverId = generateId();
 
 
 
-/** run servers **/
+/** configure servers **/
 
-// configure and start server
 app.configure(function() {
   app.set('port', port);
   app.enable('trust proxy');
 });
 
-var sockets = sockjs.createServer({log: socket_log});
+var sockets = sockjs.createServer({
+  log: socket_log
+});
 sockets.on('connection', welcome);
 sockets.installHandlers(server, {prefix: '/christmas'});
 
 app.get('/', function(req, res) {res.send("Up!");});
 // app.get('/dashboard', dashboard);
+
+
+// start the server
 
 var startServer = function() {
   server.listen(app.get('port'), function(){
