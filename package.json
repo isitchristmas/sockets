@@ -17,6 +17,8 @@
     "express": "3.x",
     "reloader": "*",
     "redis": "*",
-    "sockjs": "*"
+    "sockjs": "*",
+    "node-logentries": "*",
+    "winston": "*"
   }
 }

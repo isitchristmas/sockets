@@ -1,3 +1,29 @@
+// todo: move this into its own file
+
+var crypto = require('crypto');
+var generateId = function() {
+  var rand = new Buffer(15); // multiple of 3 for base64
+  if (!rand.writeInt32BE) {
+    return Math.abs(Math.random() * Math.random() * Date.now() | 0).toString()
+      + Math.abs(Math.random() * Math.random() * Date.now() | 0).toString();
+  }
+  var n = 0;
+  rand.writeInt32BE(n, 11);
+  if (crypto.randomBytes) {
+    crypto.randomBytes(12).copy(rand);
+  } else {
+    // not secure for node 0.4
+    [0, 4, 8].forEach(function(i) {
+      rand.writeInt32BE(Math.random() * Math.pow(2, 32) | 0, i);
+    });
+  }
+  return rand.toString('base64').replace(/\//g, '_').replace(/\+/g, '-');
+};
+
+var serverId = generateId();
+
+
+
 var events = {};
 function on(event, func) {events[event] = func;}
 
@@ -53,14 +79,6 @@ on('leave', function(connection, data) {
 });
 
 
-// logging
-
-var severities = {error: 1, info: 2, debug: 3};
-var socket_log = function(severity, message) {
-  if (log_level >= severities[severity])
-    console.log("[" + serverId + "][" + severity + "] " + message);
-}
-
 
 /****** setup */
 
@@ -73,7 +91,7 @@ var express = require('express')
 var env = (process.env.NODE_ENV || "development")
   , port = parseInt(process.env.PORT || 80)
   , config = require('./config')[env]
-  , log_level = (process.env.LOG || 1); // default to error msgs
+  , log_level = (process.env.LOG || 1); // default to error msgs only
 
 // basic HTTP server
 var app = express()
@@ -88,15 +106,15 @@ if (config.redis.enabled) {
 
   ["error", "end", "connect", "ready"].forEach(function(message) {
     pub.on(message, function () {
-      console.log("[" + serverId + "][redis] pub: " + message);
+      log("info", "[redis] pub: " + message);
     });
 
     sub.on(message, function () {
-      console.log("[" + serverId + "][redis] sub: " + message);
+      log("info", "[redis] sub: " + message);
     });
 
     client.on(message, function () {
-      console.log("[" + serverId + "][redis] client: " + message);
+      log("info", "[redis] client: " + message);
     });
   });
 
@@ -107,32 +125,30 @@ if (config.redis.enabled) {
   }
 }
 
-/* utils */
+// logging
 
-// todo: move this into its own file
+var severities = {error: 1, info: 2, debug: 3, err: 1};
+var logger, winston, log;
+if (config.logentries) {
+  logger = require('node-logentries').logger({
+    token: config.logentries
+  });
+  winston = require('winston');
+  logger.winston(winston, {});
+  winston.handleExceptions(new winston.transports.LogentriesLogger({}));
 
-var crypto = require('crypto');
-var generateId = function() {
-  var rand = new Buffer(15); // multiple of 3 for base64
-  if (!rand.writeInt32BE) {
-    return Math.abs(Math.random() * Math.random() * Date.now() | 0).toString()
-      + Math.abs(Math.random() * Math.random() * Date.now() | 0).toString();
+  log = function(severity, message) {
+    if (log_level >= severities[severity]) {
+      var msg = "[" + serverId + "] " + message;
+      (winston[severity] || winston.error)(msg);
+    }
   }
-  var n = 0;
-  rand.writeInt32BE(n, 11);
-  if (crypto.randomBytes) {
-    crypto.randomBytes(12).copy(rand);
-  } else {
-    // not secure for node 0.4
-    [0, 4, 8].forEach(function(i) {
-      rand.writeInt32BE(Math.random() * Math.pow(2, 32) | 0, i);
-    });
+} else {
+  log = function(severity, message) {
+    if (log_level >= severities[severity])
+      console.log("[" + serverId + "] " + message);
   }
-  return rand.toString('base64').replace(/\//g, '_').replace(/\+/g, '-');
-};
-
-var serverId = generateId();
-
+}
 
 
 /** configure servers **/
@@ -142,9 +158,7 @@ app.configure(function() {
   app.enable('trust proxy');
 });
 
-var sockets = sockjs.createServer({
-  log: socket_log
-});
+var sockets = sockjs.createServer({log: log});
 sockets.on('connection', welcome);
 sockets.installHandlers(server, {prefix: '/christmas'});
 
