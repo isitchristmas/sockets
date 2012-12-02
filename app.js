@@ -64,7 +64,7 @@ var express = require('express')
 // server environment
 var env = (process.env.NODE_ENV || "development")
   , config = require('./config')[env]
-  , port = parseInt(config.port || process.env.PORT || 80);
+  , port = parseInt(process.env.PORT || config.port || 80);
 
 var utils = require("./utils")
   , serverId = utils.generateId(6)
