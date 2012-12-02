@@ -1,11 +1,9 @@
 var events = {};
 function on(event, func) {events[event] = func;}
-
 var connections = {};
 
 var welcome = function(connection) {
-  // generate id
-  connection._user_id = generateId();
+  connection._user_id = utils.generateId();
   connections[connection._user_id] = connection;
   send("hello", connection);
 
@@ -110,7 +108,6 @@ sockets.installHandlers(server, {prefix: '/christmas'});
 
 app.get('/', function(req, res) {res.send("Up!");});
 // app.get('/dashboard', dashboard);
-
 
 app.configure(function() {
   app.enable('trust proxy');
