@@ -25,9 +25,11 @@ module.exports = {
     return id;
   },
 
-  log: function(serverId, config) {
+  logger: function(serverId, config) {
     // default to error msgs only
     var log_level = (config.log || process.env.LOG || 1);
+
+    var func;
 
     if (config.logentries) {
       var logger = require('node-logentries').logger({
@@ -37,18 +39,24 @@ module.exports = {
       logger.winston(winston, {});
       winston.handleExceptions(new winston.transports.LogentriesLogger({}));
 
-      return function(severity, message) {
+      func = function(severity, message) {
         if (log_level >= severities[severity]) {
           var msg = "[" + serverId + "] " + message;
           (winston[severity] || winston.error)(msg);
         }
       }
     } else {
-      return function(severity, message) {
+      func = function(severity, message) {
         if (log_level >= severities[severity])
           console.log("[" + serverId + "] " + message);
       }
     }
-  }
 
+    // shortcuts: log.warn, log.info, etc.
+    ["warn", "info", "debug", "error"].forEach(function(severity) {
+      func[severity] = function(message) {func(severity, message)};
+    });
+
+    return func;
+  }
 };

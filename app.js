@@ -68,7 +68,7 @@ var env = (process.env.NODE_ENV || "development")
 
 var utils = require("./utils")
   , serverId = utils.generateId(6)
-  , log = utils.log(serverId, config);
+  , log = utils.logger(serverId, config);
 
 // basic HTTP server
 var app = express()
@@ -82,15 +82,15 @@ if (config.redis.enabled) {
 
   ["error", "end", "connect", "ready"].forEach(function(message) {
     pub.on(message, function () {
-      log("warn", "[redis] pub: " + message);
+      log.warn("[redis] pub: " + message);
     });
 
     sub.on(message, function () {
-      log("warn", "[redis] sub: " + message);
+      log.warn("[redis] sub: " + message);
     });
 
     client.on(message, function () {
-      log("warn", "[redis] client: " + message);
+      log.warn("[redis] client: " + message);
     });
   });
 
@@ -115,6 +115,6 @@ app.get('/', function(req, res) {res.send("Up!");});
 app.configure(function() {
   app.enable('trust proxy');
   server.listen(port, function(){
-    log("warn", "Express " + app.settings.env + " server listening on port " + port);
+    log.warn("Express " + app.settings.env + " server listening on port " + port);
   });
 });
