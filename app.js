@@ -13,7 +13,7 @@ var welcome = function(connection) {
   });
 
   connection.on('close', function() {
-    events["leave"](connection, {id: connection._user_id});
+    events.leave(connection, {id: connection._user_id});
   });
 };
 
@@ -52,12 +52,9 @@ on('leave', function(connection, data) {
 
 
 
-/****** setup */
-
 var express = require('express')
   , http = require('http')
-  , sockjs = require('sockjs')
-  , redis = require('redis');
+  , sockjs = require('sockjs');
 
 // server environment
 var env = (process.env.NODE_ENV || "development")
@@ -66,41 +63,14 @@ var env = (process.env.NODE_ENV || "development")
 
 var utils = require("./utils")
   , serverId = utils.generateId(6)
-  , log = utils.logger(serverId, config);
+  , log = utils.logger(serverId, config)
+  , manager = require("./redis")(config, log);
 
 // basic HTTP server
 var app = express()
   , server = http.createServer(app);
 
-// initialize redis
-if (config.redis.enabled) {
-  var pub    = redis.createClient(config.redis.port, config.redis.host)
-    , sub    = redis.createClient(config.redis.port, config.redis.host)
-    , client = redis.createClient(config.redis.port, config.redis.host);
-
-  ["error", "end", "connect", "ready"].forEach(function(message) {
-    pub.on(message, function () {
-      log.warn("[redis] pub: " + message);
-    });
-
-    sub.on(message, function () {
-      log.warn("[redis] sub: " + message);
-    });
-
-    client.on(message, function () {
-      log.warn("[redis] client: " + message);
-    });
-  });
-
-  if (config.redis.password) {
-    pub.auth(config.redis.password);
-    sub.auth(config.redis.password);
-    client.auth(config.redis.password);
-  }
-}
-
-
-/** start everything **/
+// start everything
 
 var sockets = sockjs.createServer({log: log});
 sockets.on('connection', welcome);
