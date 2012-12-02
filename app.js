@@ -1,29 +1,3 @@
-// todo: move this into its own file
-
-var crypto = require('crypto');
-var generateId = function() {
-  var rand = new Buffer(15); // multiple of 3 for base64
-  if (!rand.writeInt32BE) {
-    return Math.abs(Math.random() * Math.random() * Date.now() | 0).toString()
-      + Math.abs(Math.random() * Math.random() * Date.now() | 0).toString();
-  }
-  var n = 0;
-  rand.writeInt32BE(n, 11);
-  if (crypto.randomBytes) {
-    crypto.randomBytes(12).copy(rand);
-  } else {
-    // not secure for node 0.4
-    [0, 4, 8].forEach(function(i) {
-      rand.writeInt32BE(Math.random() * Math.pow(2, 32) | 0, i);
-    });
-  }
-  return rand.toString('base64').replace(/\//g, '_').replace(/\+/g, '-');
-};
-
-var serverId = generateId().slice(0,6);
-
-
-
 var events = {};
 function on(event, func) {events[event] = func;}
 
@@ -90,13 +64,15 @@ var express = require('express')
 // server environment
 var env = (process.env.NODE_ENV || "development")
   , config = require('./config')[env]
-  , port = parseInt(config.port || process.env.PORT || 80)
-  , log_level = (config.log || process.env.LOG || 1); // default to error msgs only
+  , port = parseInt(config.port || process.env.PORT || 80);
+
+var utils = require("./utils")
+  , serverId = utils.generateId(6)
+  , log = utils.log(serverId, config);
 
 // basic HTTP server
 var app = express()
   , server = http.createServer(app);
-
 
 // initialize redis
 if (config.redis.enabled) {
@@ -125,38 +101,8 @@ if (config.redis.enabled) {
   }
 }
 
-// logging
 
-var severities = {error: 1, warn: 1, info: 2, debug: 3};
-var logger, winston, log;
-if (config.logentries) {
-  logger = require('node-logentries').logger({
-    token: config.logentries
-  });
-  winston = require('winston');
-  logger.winston(winston, {});
-  winston.handleExceptions(new winston.transports.LogentriesLogger({}));
-
-  log = function(severity, message) {
-    if (log_level >= severities[severity]) {
-      var msg = "[" + serverId + "] " + message;
-      (winston[severity] || winston.error)(msg);
-    }
-  }
-} else {
-  log = function(severity, message) {
-    if (log_level >= severities[severity])
-      console.log("[" + serverId + "] " + message);
-  }
-}
-
-
-/** configure servers **/
-
-app.configure(function() {
-  app.set('port', port);
-  app.enable('trust proxy');
-});
+/** start everything **/
 
 var sockets = sockjs.createServer({log: log});
 sockets.on('connection', welcome);
@@ -166,9 +112,8 @@ app.get('/', function(req, res) {res.send("Up!");});
 // app.get('/dashboard', dashboard);
 
 
-// start the server
-
 app.configure(function() {
+  app.enable('trust proxy');
   server.listen(port, function(){
     log("warn", "Express " + app.settings.env + " server listening on port " + port);
   });
