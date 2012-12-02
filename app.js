@@ -20,7 +20,7 @@ var generateId = function() {
   return rand.toString('base64').replace(/\//g, '_').replace(/\+/g, '-');
 };
 
-var serverId = generateId();
+var serverId = generateId().slice(0,6);
 
 
 
@@ -89,9 +89,9 @@ var express = require('express')
 
 // server environment
 var env = (process.env.NODE_ENV || "development")
-  , port = parseInt(process.env.PORT || 80)
   , config = require('./config')[env]
-  , log_level = (process.env.LOG || 1); // default to error msgs only
+  , port = parseInt(config.port || process.env.PORT || 80)
+  , log_level = (config.log || process.env.LOG || 1); // default to error msgs only
 
 // basic HTTP server
 var app = express()
@@ -168,19 +168,8 @@ app.get('/', function(req, res) {res.send("Up!");});
 
 // start the server
 
-var startServer = function() {
-  server.listen(app.get('port'), function(){
-    log("warn", "Express " + app.settings.env + " server listening on port " + app.get('port'));
-  });
-}
-
-app.configure('development', function() {
-  app.use(express.errorHandler());
-
-  require('reloader')({
-    watchModules: true,
-    onReload: startServer
+app.configure(function() {
+  server.listen(port, function(){
+    log("warn", "Express " + app.settings.env + " server listening on port " + port);
   });
 });
-
-app.configure('production', startServer);
