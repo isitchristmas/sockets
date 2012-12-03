@@ -56,7 +56,7 @@ Manager.prototype = {
 
   removeUser: function(userId) {
     var self = this;
-    this.client.hdel("users", [this.serverId, userId].join(":"), redis.print, function(err, reply) {
+    this.client.hdel("users", [this.serverId, userId].join(":"), function(err, reply) {
       self.rlog(self, err, reply, "removing user: " + userId);
     })
   },
