@@ -1,6 +1,6 @@
 var events = {};
 function on(event, func) {events[event] = func;}
-var deathInterval = 5000;
+var deathInterval = 6000;
 
 var connections = {};
 var welcome = function(connection) {
@@ -85,12 +85,6 @@ var dashboard = function(req, res) {
     });
   });
 };
-
-var clearUsers = function(req, res) {
-  manager.clearUsers(function() {
-    res.redirect("/dashboard");
-  });
-}
 
 
 var express = require('express')
