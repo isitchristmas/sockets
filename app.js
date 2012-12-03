@@ -113,7 +113,6 @@ sockets.installHandlers(server, {prefix: '/christmas'});
 
 app.get('/', function(req, res) {res.send("Up!");});
 app.get('/dashboard', dashboard);
-app.get('/dashboard/clear', clearUsers);
 
 app.configure(function() {
   app.enable('trust proxy');
