@@ -1,6 +1,6 @@
 {
   "name": "sockets-staging",
-  "version": "0.3.5",
+  "version": "0.3.7",
   "private": true,
 
   "subdomain": "iic_sockets_staging",
@@ -16,7 +16,6 @@
   "dependencies": {
     "express": "3.x",
     "redis": "*",
-    "hiredis": "*",
     "sockjs": "*",
     "node-logentries": "0.0.2",
     "winston": "*",
