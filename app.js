@@ -35,11 +35,20 @@ var rebroadcast = function(connection, data) {
   broadcast(data._event, connection._user_id, data);
 }
 
+var userAlive = function(data) {
+  manager.addUser(data.id, data.country);
+};
+
 // events 
 
 on('arrive', function(connection, data) {
   rebroadcast(connection, data);
-  manager.addUser(data.id, data.country);
+  userAlive(data);
+});
+
+on('heartbeat', function(connection, data) {
+  send('heartbeat', connections[connection._user_id], data);
+  userAlive(data);
 });
 
 on('motion', rebroadcast);
@@ -54,8 +63,6 @@ on('leave', function(connection, data) {
   broadcast("leave", data.id, data);
   manager.removeUser(data.id);
 });
-
-
 
 var dashboard = function(req, res) {
   manager.allUsers(function(servers) {

@@ -50,7 +50,10 @@ Manager.prototype = {
   addUser: function(userId, country) {
     var self = this;
     this.client.hset("users", [this.serverId, userId].join(":"), country, function(err, reply) {
-      self.rlog(self, err, reply, "adding user: " + userId);
+      if (reply == "1")
+        self.rlog(self, err, reply, "adding user: " + userId, "info");
+      else
+        self.rlog(self, err, reply, "keeping user: " + userId, "debug");
     });
   },
 
@@ -87,11 +90,12 @@ Manager.prototype = {
     this.client = client;
   },
 
-  rlog: function(self, err, reply, message) {
+  rlog: function(self, err, reply, message, severity) {
+    if (!severity) severity = "info";
     if (err)
       self.log.error("[redis] ERROR " + message + "(" + err + ")");
     else
-      self.log.info("[redis] " + message + " (" + reply + ")");
+      self.log[severity]("[redis] " + message + " (" + reply + ")");
   }
 }
 
