@@ -1,5 +1,6 @@
 var events = {};
 function on(event, func) {events[event] = func;}
+var deathInterval = 5000;
 
 var connections = {};
 var welcome = function(connection) {
@@ -13,7 +14,7 @@ var welcome = function(connection) {
   });
 
   connection.on('close', function() {
-    events.leave(connection, {id: connection._user_id});
+    userLeft(connection._user_id, "departing");
   });
 };
 
@@ -37,7 +38,22 @@ var rebroadcast = function(connection, data) {
 
 var userAlive = function(data) {
   manager.addUser(data.id, data.country);
+  setUserHeartbeat(data.id);
 };
+
+var userLeft = function(id, cause) {
+  delete connections[id];
+  broadcast("leave", id, {id: id});
+  manager.removeUser(id, cause);
+}
+
+var setUserHeartbeat = function(id) {
+  clearTimeout(connections[id]._heartbeat);
+  connections[id]._heartbeat = setTimeout(function() {
+    // if this runs, the user is deemed dead
+    userLeft(id, "timing out");
+  }, deathInterval);
+}
 
 // events 
 
@@ -47,7 +63,7 @@ on('arrive', function(connection, data) {
 });
 
 on('heartbeat', function(connection, data) {
-  send('heartbeat', connections[connection._user_id], data);
+  send('heartbeat', connections[data.id], data);
   userAlive(data);
 });
 
@@ -58,11 +74,8 @@ on('here', function(connection, data) {
     send('here', connections[data.to], data);
 });
 
-on('leave', function(connection, data) {
-  delete connections[data.id];
-  broadcast("leave", data.id, data);
-  manager.removeUser(data.id);
-});
+
+// admin area
 
 var dashboard = function(req, res) {
   manager.allUsers(function(servers) {
@@ -116,3 +129,6 @@ app.configure(function() {
     log.warn("Express " + app.settings.env + " server listening on port " + port);
   });
 });
+
+// wipe the users clean on process start, the live ones will heartbeat in
+manager.clearUsers();

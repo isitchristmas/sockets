@@ -57,10 +57,10 @@ Manager.prototype = {
     });
   },
 
-  removeUser: function(userId) {
+  removeUser: function(userId, cause) {
     var self = this;
     this.client.hdel("users", [this.serverId, userId].join(":"), function(err, reply) {
-      self.rlog(self, err, reply, "removing user: " + userId);
+      self.rlog(self, err, reply, cause + " user: " + userId);
     })
   },
 
@@ -69,7 +69,7 @@ Manager.prototype = {
     var self = this;
     this.client.del("users", function(err, reply) {
       self.rlog(self, err, reply, "clearing users");
-      callback();
+      if (callback) callback();
     });
   },
 
