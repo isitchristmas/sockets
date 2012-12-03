@@ -20,9 +20,12 @@ module.exports = {
         rand.writeInt32BE(Math.random() * Math.pow(2, 32) | 0, i);
       });
     }
-    var id = rand.toString('base64').replace(/\//g, '_').replace(/\+/g, '-');
-    if (limit) id = id.slice(0, limit);
-    return id;
+
+    if (!limit) limit = 16;
+    return rand.toString('base64').
+      replace(/\//g, '_').
+      replace(/\+/g, '-').
+      slice(0, limit);
   },
 
   logger: function(serverId, config) {

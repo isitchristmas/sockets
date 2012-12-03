@@ -15,19 +15,14 @@
 
   "dependencies": {
     "express": "3.x",
-    "reloader": "*",
     "redis": "*",
     "sockjs": "*",
-    "node-logentries": "*",
-    "winston": "*"
+    "node-logentries": "0.0.2",
+    "winston": "*",
+    "ejs": "*"
   },
 
   "bundledDependencies": [
-    "express",
-    "reloader",
-    "redis",
-    "sockjs",
-    "node-logentries",
-    "winston"
+    "node-logentries"
   ]
 }

@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+  <title>Is It Christmas Global HQ</title>
+  <style>
+    html {font-family: monospace; font-size: 125%;}
+    h1 {font-size: 120%;}
+    h2 {font-size: 100%;}
+  </style>
+</head>
+<body>
+
+<h1>Active Users</h1>
+
+<% if (servers == null) { %>
+  
+  <h2>Error connecting to Redis manager.</h2>
+
+<% } else if (servers.length == 0) { %>
+  
+  <h2>No users right now.</h2>
+
+<% } else { %>
+
+  <% for(server in servers) { %>
+    <p>
+    <%= server == serverId ? "*" : "" %> [<%= server %>]
+    (<%= servers[server].length %>)
+    <% for (i in servers[server]) { %>
+      <% var user = servers[server][i]; %>
+      <br/>- <%= user.id %> (<%= user.country %>)
+    <% } %>
+    </p>
+  <% } %>
+
+<% } %>
+
+</body>
+</html>

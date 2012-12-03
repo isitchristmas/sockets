@@ -1,7 +1,7 @@
 var events = {};
 function on(event, func) {events[event] = func;}
-var connections = {};
 
+var connections = {};
 var welcome = function(connection) {
   connection._user_id = utils.generateId();
   connections[connection._user_id] = connection;
@@ -37,7 +37,11 @@ var rebroadcast = function(connection, data) {
 
 // events 
 
-on('arrive', rebroadcast);
+on('arrive', function(connection, data) {
+  rebroadcast(connection, data);
+  manager.addUser(data.id, data.country);
+});
+
 on('motion', rebroadcast);
 
 on('here', function(connection, data) {
@@ -48,8 +52,25 @@ on('here', function(connection, data) {
 on('leave', function(connection, data) {
   delete connections[data.id];
   broadcast("leave", data.id, data);
+  manager.removeUser(data.id);
 });
 
+
+
+var dashboard = function(req, res) {
+  manager.allUsers(function(servers) {
+    res.render("dashboard", {
+      serverId: serverId,
+      servers: servers
+    });
+  });
+};
+
+var clearUsers = function(req, res) {
+  manager.clearUsers(function() {
+    res.redirect("/dashboard");
+  });
+}
 
 
 var express = require('express')
@@ -64,7 +85,7 @@ var env = (process.env.NODE_ENV || "development")
 var utils = require("./utils")
   , serverId = utils.generateId(6)
   , log = utils.logger(serverId, config)
-  , manager = require("./redis")(config, log);
+  , manager = require("./redis")(serverId, config.redis, log);
 
 // basic HTTP server
 var app = express()
@@ -77,10 +98,13 @@ sockets.on('connection', welcome);
 sockets.installHandlers(server, {prefix: '/christmas'});
 
 app.get('/', function(req, res) {res.send("Up!");});
-// app.get('/dashboard', dashboard);
+app.get('/dashboard', dashboard);
+app.get('/dashboard/clear', clearUsers);
 
 app.configure(function() {
   app.enable('trust proxy');
+  app.engine('.html', require('ejs').__express);
+  app.set('view engine', 'html');
   server.listen(port, function(){
     log.warn("Express " + app.settings.env + " server listening on port " + port);
   });
