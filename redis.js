@@ -35,10 +35,14 @@ Manager.prototype = {
       Object.keys(reply).forEach(function(id, i) {
         var pieces = id.split(":");
         var server = pieces[0]
-          , user = pieces[1]
-          , country = reply[id];
+          , user = pieces[1];
+        
+        pieces = reply[id].split(":");
+        var country = pieces[0]
+          , transport = pieces[1];
+
         if (!users[server]) users[server] = [];
-        users[server].push({id: user, country: country});
+        users[server].push({id: user, country: country, transport: transport});
       });
 
       callback(users);
@@ -47,9 +51,9 @@ Manager.prototype = {
 
 
   // events:
-  addUser: function(userId, country) {
+  addUser: function(userId, country, transport) {
     var self = this;
-    this.client.hset("users", [this.serverId, userId].join(":"), country, function(err, reply) {
+    this.client.hset("users", [this.serverId, userId].join(":"), [country, transport].join(":"), function(err, reply) {
       if (reply == "1")
         self.rlog(self, err, reply, "adding user: " + userId, "info");
       else

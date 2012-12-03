@@ -37,7 +37,7 @@ var rebroadcast = function(connection, data) {
 }
 
 var userAlive = function(data) {
-  manager.addUser(data.id, data.country);
+  manager.addUser(data.id, data.country, data.transport);
   setUserHeartbeat(data.id);
 };
 

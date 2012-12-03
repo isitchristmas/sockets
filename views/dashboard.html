@@ -24,11 +24,12 @@
 
   <% for(server in servers) { %>
     <p>
-    <%= server == serverId ? "*" : "" %> [<%= server %>]
+    [<%= server %>]
     (<%= servers[server].length %>)
+    <%= server == serverId ? "*" : "" %>
     <% for (i in servers[server]) { %>
       <% var user = servers[server][i]; %>
-      <br/>- <%= user.id %> (<%= user.country %>)
+      <br/>- (<%= user.country %>) <%= user.id %> [<%= user.transport %>]
     <% } %>
     </p>
   <% } %>
