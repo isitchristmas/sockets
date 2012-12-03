@@ -50,11 +50,13 @@ var userLeft = function(id, cause) {
 }
 
 var setUserHeartbeat = function(id) {
-  clearTimeout(connections[id]._heartbeat);
-  connections[id]._heartbeat = setTimeout(function() {
-    // if this runs, the user is deemed dead
-    userLeft(id, "timing out");
-  }, deathInterval);
+  if (connections[id]) {
+    clearTimeout(connections[id]._heartbeat);
+    connections[id]._heartbeat = setTimeout(function() {
+      // if this runs, the user is deemed dead
+      userLeft(id, "timing out");
+    }, deathInterval);
+  }
 }
 
 // events 
