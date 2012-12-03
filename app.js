@@ -21,8 +21,10 @@ var welcome = function(connection) {
 var send = function(event, connection, object) {
   object = object || {};
   object._event = event;
-  object._user_id = connection._user_id;
-  connection.write(JSON.stringify(object));
+  if (connection) {
+    object._user_id = connection._user_id;
+    connection.write(JSON.stringify(object));
+  }
 }
 
 var broadcast = function(event, from, object) {
