@@ -64,7 +64,8 @@ Manager.prototype = {
   removeUser: function(userId, cause) {
     var self = this;
     this.client.hdel("users", [this.serverId, userId].join(":"), function(err, reply) {
-      self.rlog(self, err, reply, cause + " user: " + userId);
+      var severity = (cause == "timing out" ? "warn" : "info");
+      self.rlog(self, err, reply, cause + " user: " + userId, severity);
     })
   },
 

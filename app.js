@@ -14,7 +14,7 @@ var welcome = function(connection) {
   });
 
   connection.on('close', function() {
-    userLeft(connection._user_id, "departing");
+    userLeft(connection._user_id, (connection._timed_out ? "timed out" : "departing"));
   });
 };
 
@@ -53,8 +53,11 @@ var setUserHeartbeat = function(id) {
   if (connections[id]) {
     clearTimeout(connections[id]._heartbeat);
     connections[id]._heartbeat = setTimeout(function() {
-      // if this runs, the user is deemed dead
-      userLeft(id, "timing out");
+      if (connections[id]) {
+        log.warn("timing out user: " + id);
+        connections[id]._timed_out = true;
+        connections[id].close();
+      }
     }, deathInterval);
   }
 }
