@@ -38,11 +38,6 @@ var rebroadcast = function(connection, data) {
   broadcast(data._event, connection._user_id, data);
 }
 
-var userAlive = function(data) {
-  manager.addUser(data.id, data.country, data.transport);
-  setUserHeartbeat(data.id);
-};
-
 var userLeft = function(id, cause) {
   delete connections[id];
   broadcast("leave", id, {id: id});
@@ -66,12 +61,13 @@ var setUserHeartbeat = function(id) {
 
 on('arrive', function(connection, data) {
   rebroadcast(connection, data);
-  userAlive(data);
+  manager.addUser(data.id, data.country, data.transport);
+  setUserHeartbeat(data.id);
 });
 
 on('heartbeat', function(connection, data) {
   send('heartbeat', connections[data.id], data);
-  userAlive(data);
+  setUserHeartbeat(data.id);
 });
 
 on('motion', rebroadcast);
