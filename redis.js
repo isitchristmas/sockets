@@ -90,13 +90,13 @@ Manager.prototype = {
   },
 
   // clears ALL users (not just this process')
-  clearUsers: function(callback) {
+  clearUsers: function() {
     var self = this;
     this.client.del("users", function(err, reply) {
       self.rlog(self, err, reply, "clearing users");
-      if (callback) callback();
     });
   },
+
 
 
   init: function() {
