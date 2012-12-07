@@ -5,7 +5,8 @@
   m = require('./redis')(id, c.redis, require("./utils").logger(id, c))
 */
 
-var redis = require('redis');
+var redis = require('redis')
+  , dateFormat = require('dateformat');
 
 var Manager = function(serverId, config, log) {
   this.serverId = serverId;
@@ -76,6 +77,8 @@ Manager.prototype = {
       else
         self.rlog(self, err, reply, "keeping user: " + user.id, "debug");
     });
+
+    this.logVisit(user);
   },
 
   removeUser: function(userId, cause) {
@@ -97,6 +100,36 @@ Manager.prototype = {
     });
   },
 
+  // store visits forever
+  logVisit: function(user) {
+    var self = this;
+    var date = dateFormat(Date.now(), "mmdd");
+    var key = [this.serverId, user.id].join(":");
+
+    // accumulate counters of various combos:
+    //   chrome, chrome-20, chrome-20-linux, websockets-chrome-20-linux
+    //   websockets, linux
+    // accumulate both for all-time, and for the date (YYYY-mm-dd-*)
+
+    ["", date + "-"].forEach(function(prefix) {
+      self.client.sadd(prefix + "browsers", user.browser);
+      self.client.sadd(prefix + "oses", user.os);
+      self.client.sadd(prefix + "transports", user.transport);
+      self.client.sadd(prefix + "visitors", [self.serverId, user.id].join(":"));
+
+      [
+        ["transports", user.transport].join("-"),
+        ["oses", user.os].join("-"),
+        ["browsers", user.browser].join("-"),
+        ["versions", user.browser, user.version].join("-"),
+        [user.browser, user.version, user.os].join("-"),
+        [user.browser, user.version, user.os, user.transport].join("-")
+      ].forEach(function(key) {
+        self.client.incr(prefix + key);
+      })
+    });
+    
+  },
 
 
   init: function() {
