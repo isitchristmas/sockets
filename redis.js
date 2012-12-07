@@ -111,19 +111,19 @@ Manager.prototype = {
     //   websockets, linux
     // accumulate both for all-time, and for the date (YYYY-mm-dd-*)
 
-    ["", date + "-"].forEach(function(prefix) {
+    ["all:", date + ":"].forEach(function(prefix) {
       self.client.sadd(prefix + "browsers", user.browser);
       self.client.sadd(prefix + "oses", user.os);
       self.client.sadd(prefix + "transports", user.transport);
       self.client.sadd(prefix + "visitors", [self.serverId, user.id].join(":"));
 
       [
-        ["transports", user.transport].join("-"),
-        ["oses", user.os].join("-"),
-        ["browsers", user.browser].join("-"),
-        ["versions", user.browser, user.version].join("-"),
-        [user.browser, user.version, user.os].join("-"),
-        [user.browser, user.version, user.os, user.transport].join("-")
+        ["t", user.transport].join(":"),
+        ["o", user.os].join(":"),
+        ["b", user.browser].join(":"),
+        ["bv", user.browser, user.version].join(":"),
+        ["bvo", user.browser, user.version, user.os].join(":"),
+        ["bvot", user.browser, user.version, user.os, user.transport].join(":")
       ].forEach(function(key) {
         self.client.incr(prefix + key);
       })
