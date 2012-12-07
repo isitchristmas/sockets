@@ -42,7 +42,9 @@ Manager.prototype = {
           country: valuePieces[0],
           transport: valuePieces[1],
           browser: valuePieces[2],
-          time: valuePieces[3]
+          version: valuePieces[3],
+          os: valuePieces[4],
+          time: valuePieces[5]
         };
 
         if (!users[server]) users[server] = [];
@@ -59,7 +61,14 @@ Manager.prototype = {
     var self = this;
 
     var key = [this.serverId, user.id].join(":");
-    var value = [user.country, user.transport, user.browser, user.time].join(":");
+    var value = [
+      user.country, 
+      user.transport, 
+      user.browser, 
+      user.version,
+      user.os,
+      user.time
+    ].join(":");
 
     this.client.hset("users", key, value, function(err, reply) {
       if (reply == "1")

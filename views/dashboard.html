@@ -30,7 +30,7 @@
     <%= server == serverId ? "*" : "" %>
     <% for (i in servers[server]) { %>
       <% var user = servers[server][i]; %>
-      <br/>(<%= user.country %>) <%= user.id %> [<%= user.transport %>][<%= user.browser %>] <%= dateFormat(user.time, "dd-HH:MM") %>
+      <br/><%= dateFormat(user.time, "dd-HH:MM") %> (<%= user.country %>) <%= user.id.slice(0,6) %> [<%= user.transport %>][<%= user.browser %>-<%= user.version %>-<%= user.os %>]
     <% } %>
     </p>
   <% } %>
