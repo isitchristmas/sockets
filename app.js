@@ -61,7 +61,7 @@ var setUserHeartbeat = function(id) {
 
 on('arrive', function(connection, data) {
   rebroadcast(connection, data);
-  manager.addUser(data.id, data.country, data.transport);
+  manager.addUser(data);
   setUserHeartbeat(data.id);
 });
 
@@ -84,7 +84,8 @@ var dashboard = function(req, res) {
   manager.allUsers(function(servers) {
     res.render("dashboard", {
       serverId: serverId,
-      servers: servers
+      servers: servers,
+      dateFormat: dateFormat
     });
   });
 };
@@ -92,7 +93,8 @@ var dashboard = function(req, res) {
 
 var express = require('express')
   , http = require('http')
-  , sockjs = require('sockjs');
+  , sockjs = require('sockjs')
+  , dateFormat = require('dateformat');
 
 // server environment
 var env = (process.env.NODE_ENV || "development")

@@ -33,16 +33,20 @@ Manager.prototype = {
 
       var users = {};
       Object.keys(reply).forEach(function(id, i) {
-        var pieces = id.split(":");
-        var server = pieces[0]
-          , user = pieces[1];
-        
-        pieces = reply[id].split(":");
-        var country = pieces[0]
-          , transport = pieces[1];
+        var keyPieces = id.split(":");
+        var valuePieces = reply[id].split(":");
+
+        var server = keyPieces[0];
+        var user = {
+          id: keyPieces[1],
+          country: valuePieces[0],
+          transport: valuePieces[1],
+          browser: valuePieces[2],
+          time: valuePieces[3]
+        };
 
         if (!users[server]) users[server] = [];
-        users[server].push({id: user, country: country, transport: transport});
+        users[server].push(user);
       });
 
       callback(users);
@@ -51,19 +55,26 @@ Manager.prototype = {
 
 
   // events:
-  addUser: function(userId, country, transport) {
+  addUser: function(user) {
     var self = this;
-    this.client.hset("users", [this.serverId, userId].join(":"), [country, transport].join(":"), function(err, reply) {
+
+    var key = [this.serverId, user.id].join(":");
+    var value = [user.country, user.transport, user.browser, user.time].join(":");
+
+    this.client.hset("users", key, value, function(err, reply) {
       if (reply == "1")
-        self.rlog(self, err, reply, "adding user: " + userId, "info");
+        self.rlog(self, err, reply, "adding user: " + user.id, "info");
       else
-        self.rlog(self, err, reply, "keeping user: " + userId, "debug");
+        self.rlog(self, err, reply, "keeping user: " + user.id, "debug");
     });
   },
 
   removeUser: function(userId, cause) {
     var self = this;
-    this.client.hdel("users", [this.serverId, userId].join(":"), function(err, reply) {
+    
+    var key = [this.serverId, userId].join(":");
+
+    this.client.hdel("users", key, function(err, reply) {
       var severity = (cause == "timing out" ? "warn" : "info");
       self.rlog(self, err, reply, cause + " user: " + userId, severity);
     })

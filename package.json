@@ -1,6 +1,6 @@
 {
   "name": "sockets-staging",
-  "version": "0.5.7",
+  "version": "0.5.8",
   "private": true,
 
   "subdomain": "iic_sockets_staging",
@@ -19,7 +19,8 @@
     "sockjs": "*",
     "node-logentries": "0.0.2",
     "winston": "*",
-    "ejs": "*"
+    "ejs": "*",
+    "dateformat": "*"
   },
 
   "bundledDependencies": [
