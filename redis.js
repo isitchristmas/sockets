@@ -218,7 +218,7 @@ Manager.prototype = {
 
     sub._heartbeat = setInterval(function() {
       sub.subscribe('heartbeat');
-    }, 5 * 1000);
+    }, 30 * 1000);
 
     this.client = client;
     this.sub = sub;
