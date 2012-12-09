@@ -87,9 +87,12 @@ Manager.prototype = {
     var key = [this.serverId, userId].join(":");
 
     this.client.hdel("users", key, function(err, reply) {
-      var severity = (cause == "timing out" ? "warn" : "info");
+      var severity = (cause == "timed out" ? "warn" : "info");
       self.rlog(self, err, reply, cause + " user: " + userId, severity);
     })
+
+    if (cause == "timed out")
+      this.logTimeout();
   },
 
   // clears ALL users (not just this process')
@@ -106,24 +109,25 @@ Manager.prototype = {
     var date = dateFormat(Date.now(), "mmdd");
     var key = [this.serverId, user.id].join(":");
 
-    // accumulate counters of various combos:
-    //   chrome, chrome-20, chrome-20-linux, websockets-chrome-20-linux
-    //   websockets, linux
-    // accumulate both for all-time, and for the date (YYYY-mm-dd-*)
+    // accumulate counters of various combos
+    // accumulate both for all-time, and for the date (mmdd:*)
 
     ["all:", date + ":"].forEach(function(prefix) {
       self.client.sadd(prefix + "browsers", user.browser);
       self.client.sadd(prefix + "oses", user.os);
       self.client.sadd(prefix + "transports", user.transport);
-      self.client.sadd(prefix + "visitors", [self.serverId, user.id].join(":"));
+      self.client.sadd(prefix + "countries", user.country);
 
       [
-        ["t", user.transport].join(":"),
-        ["o", user.os].join(":"),
-        ["b", user.browser].join(":"),
-        ["bv", user.browser, user.version].join(":"),
-        ["bvo", user.browser, user.version, user.os].join(":"),
-        ["bvot", user.browser, user.version, user.os, user.transport].join(":")
+        "visitors",
+        ["c", user.country].join("-"),
+        ["ct", user.country, user.transport].join("-"),
+        ["t", user.transport].join("-"),
+        ["o", user.os].join("-"),
+        ["b", user.browser].join("-"),
+        ["bv", user.browser, user.version].join("-"),
+        ["bvo", user.browser, user.version, user.os].join("-"),
+        ["bvot", user.browser, user.version, user.os, user.transport].join("-")
       ].forEach(function(key) {
         self.client.incr(prefix + key);
       })
@@ -131,6 +135,23 @@ Manager.prototype = {
     
   },
 
+  logTimeout: function() {
+    var self = this;
+    var date = dateFormat(Date.now(), "mmdd");
+
+    ["all:", date + ":"].forEach(function(prefix) {
+      self.client.incr(prefix + "timeouts");
+    });
+  },
+
+  logNewServer: function() {
+    var self = this;
+    var date = dateFormat(Date.now(), "mmdd");
+
+    ["all:", date + ":"].forEach(function(prefix) {
+      self.client.sadd(prefix + "servers", self.serverId);
+    });
+  },
 
   init: function() {
     var client = redis.createClient(this.port, this.host)

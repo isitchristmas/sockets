@@ -130,3 +130,4 @@ app.configure(function() {
 
 // wipe the users clean on process start, the live ones will heartbeat in
 manager.clearUsers();
+manager.logNewServer();
