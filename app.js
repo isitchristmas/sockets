@@ -1,5 +1,6 @@
 var events = {};
 function on(event, func) {events[event] = func;}
+function noop() {};
 var deathInterval = 6000;
 
 var connections = {};
@@ -9,8 +10,15 @@ var welcome = function(connection) {
   send("hello", connection);
 
   connection.on('data', function(message) {
-    var data = JSON.parse(message);
-    events[data._event](connection, data);
+    if (message.length > 1000) return; // 1KB limit
+
+    try {
+      var data = JSON.parse(message);
+      (events[data._event] || noop)(connection, data);
+    } catch (e) {
+      log.error("Error parsing message - " + message);
+      log.error(e);
+    }
   });
 
   connection.on('close', function() {
@@ -69,6 +77,11 @@ on('heartbeat', function(connection, data) {
   send('heartbeat', connections[data.id], data);
   setUserHeartbeat(data.id);
 });
+
+// used only for debugging
+// on('echo', function(connection, data) {
+//   log.debug("echo: " + JSON.stringify(data));
+// })
 
 on('motion', rebroadcast);
 
