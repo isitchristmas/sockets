@@ -175,6 +175,12 @@ Manager.prototype = {
       self.log.error("[redis] ERROR " + message + "(" + err + ")");
     else
       self.log[severity]("[redis] " + message + " (" + reply + ")");
+  },
+
+  // not used right now, could be to diagnose a problem
+  rror: function(err, reply) {
+    if (err)
+      console.log("[redis] ERROR UNEXPECTED: " + err);
   }
 }
 
