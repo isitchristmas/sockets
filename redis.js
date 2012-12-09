@@ -216,6 +216,10 @@ Manager.prototype = {
       sub.subscribe("command");
     });
 
+    sub._heartbeat = setInterval(function() {
+      sub.subscribe('heartbeat');
+    }, 5 * 1000);
+
     this.client = client;
     this.sub = sub;
   },
