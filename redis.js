@@ -202,7 +202,8 @@ Manager.prototype = {
     });
 
     sub.on('subscribe', function(channel, count) {
-      log.warn("[redis] subscribed to " + channel + " [" + count + "]");
+      var severity = (channel == "heartbeat") ? "debug" : "warn";
+      log(severity, "[redis] subscribed to " + channel + " [" + count + "]");
     });
 
     sub.on('unsubscribe', function(channel, count) {
