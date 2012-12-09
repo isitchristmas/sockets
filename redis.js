@@ -172,14 +172,15 @@ Manager.prototype = {
       , log = this.log
       , self = this;
 
-    var levels = {error: "warn", end: "warn", connect: "debug", ready: "debug"};
     ["error", "end", "connect", "ready"].forEach(function(message) {
       client.on(message, function () {
-        log[levels[message]]("[redis] client: " + message);
+        log.warn("[redis] client: " + message);
       });
+    });
 
+    ["error", "end", "connect"].forEach(function(message) {
       sub.on(message, function () {
-        log[levels[message]]("[redis] sub: " + message);
+        log.warn("[redis] sub: " + message);
       });
     });
 
@@ -201,12 +202,19 @@ Manager.prototype = {
     });
 
     sub.on('subscribe', function(channel, count) {
-      log.info("[redis] subscribed to " + channel + " [" + count + "]");
+      log.warn("[redis] subscribed to " + channel + " [" + count + "]");
     });
 
-    sub.subscribe("client");
-    sub.subscribe("server");
-    sub.subscribe("command");
+    sub.on('unsubscribe', function(channel, count) {
+      log.warn("[redis] unsubscribed from " + channel + "[" + count + "]");
+    });
+
+    sub.on('ready', function() {
+      log.warn("[redis] sub: ready");
+      sub.subscribe("client");
+      sub.subscribe("server");
+      sub.subscribe("command");
+    });
 
     this.client = client;
     this.sub = sub;
