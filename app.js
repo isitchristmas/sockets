@@ -61,7 +61,7 @@ var setUserHeartbeat = function(id) {
     clearTimeout(connections[id]._heartbeat);
     connections[id]._heartbeat = setTimeout(function() {
       if (connections[id]) {
-        log.warn("timing out user: " + id);
+        log.info("timing out user: " + id);
         connections[id]._timed_out = true;
         connections[id].close();
       }
