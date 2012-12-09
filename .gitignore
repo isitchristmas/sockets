@@ -1,2 +1,4 @@
 /config.js
 /*.txt
+
+/node_modules/sockjs-client
