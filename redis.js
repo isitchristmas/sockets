@@ -16,31 +16,19 @@ var Manager = function(serverId, config, log) {
   this.port = config.port;
   this.default_live = config.default_live;
 
+  // noop
+  this.onClient = this.onServer = this.onCommand = function() {};
+
   this.log = log;
   this.init();
 };
 
 Manager.prototype = {
 
-  loadConfig: function(callback) {
-    var self = this;
-    this.client.hgetall("live", function(err, reply) {
-      if (err) {
-        self.rlog(self, err, reply, "Error fetching live config");
-        callback(null, err);
-      }
-
-      // if the db has nothing, use config.js
-      if (reply == null) 
-        callback(self.default_live);
-      else
-        callback(reply);
-    });
-  },
-
-  // return hash indexed by serverId with array of {id, country} objects
+  // return hash indexed by serverId with array of user objects
   allUsers: function(callback) {
     var self = this;
+
     this.client.hgetall("users", function(err, reply) {
       if (err) {
         self.rlog(self, err, reply, "getting users");
@@ -72,8 +60,7 @@ Manager.prototype = {
     });
   },
 
-
-  // events:
+  // a user has joined, add them to the list and log a bunch of analytics about them
   addUser: function(user) {
     var self = this;
 
@@ -97,6 +84,7 @@ Manager.prototype = {
     this.logVisit(user);
   },
 
+  // a user has left, mark that, and if it was a timeout, warn and log it
   removeUser: function(userId, cause) {
     var self = this;
     
@@ -111,7 +99,11 @@ Manager.prototype = {
       this.logTimeout();
   },
 
-  // clears ALL users (not just this process')
+  // clears ALL users (not just this process').
+  // useful to do whenever there's a risk of a server having crashed without
+  // clearing its own users, because still-connected users will re-add
+  // themselves through heartbeats without trouble (and their connection time
+  // will stay correct because it gets generated client-side)
   clearUsers: function() {
     var self = this;
     this.client.del("users", function(err, reply) {
@@ -119,7 +111,9 @@ Manager.prototype = {
     });
   },
 
-  // store visits forever
+  // store anonymous visit analytics
+  // vital to understanding who is and isn't able to establish connections,
+  // especially when compared to conventional metrics like Google Analytics
   logVisit: function(user) {
     var self = this;
     var date = dateFormat(Date.now(), "mmdd");
@@ -151,6 +145,7 @@ Manager.prototype = {
     
   },
 
+  // store records of timeouts, though we don't have user-specific info here
   logTimeout: function() {
     var self = this;
     var date = dateFormat(Date.now(), "mmdd");
@@ -160,6 +155,8 @@ Manager.prototype = {
     });
   },
 
+  // new servers register on boot, helps give me an idea of how often servers
+  // run out of memory, crash, and restart
   logNewServer: function() {
     var self = this;
     var date = dateFormat(Date.now(), "mmdd");
@@ -171,18 +168,72 @@ Manager.prototype = {
 
   init: function() {
     var client = redis.createClient(this.port, this.host)
-      , log = this.log;
+      , sub = redis.createClient(this.port, this.host)
+      , log = this.log
+      , self = this;
 
+    var levels = {error: "warn", end: "warn", connect: "debug", ready: "debug"};
     ["error", "end", "connect", "ready"].forEach(function(message) {
       client.on(message, function () {
-        log.warn("[redis] client: " + message);
+        log[levels[message]]("[redis] client: " + message);
+      });
+
+      sub.on(message, function () {
+        log[levels[message]]("[redis] sub: " + message);
       });
     });
 
-    if (this.password)
+    if (this.password) {
       client.auth(this.password);
+      sub.auth(this.password);
+    }
+
+    sub.on('message', function(channel, message) {
+      if (channel == "command") {
+        var args = message.split(":");
+        var command = args.shift();
+        self.onCommand(command, args);
+      } else { // "client", "server"
+        var pieces = message.split(":");
+        self.onConfig(channel, pieces[0], pieces[1]);
+        self.saveConfig(pieces[0], pieces[1]);
+      }
+    });
+
+    sub.on('subscribe', function(channel, count) {
+      log.info("[redis] subscribed to " + channel + " [" + count + "]");
+    });
+
+    sub.subscribe("client");
+    sub.subscribe("server");
+    sub.subscribe("command");
 
     this.client = client;
+    this.sub = sub;
+  },
+
+  // load the current live config (on server start)
+  // used to initialize incoming clients to the current live config
+  loadConfig: function(callback) {
+    var self = this;
+    this.client.hgetall("live", function(err, reply) {
+      if (err) {
+        self.rlog(self, err, reply, "Error fetching live config");
+        callback(null, err);
+      }
+
+      callback(reply || {});
+    });
+  },
+
+  // will be updated on publish events to client/server config
+  // will be updated redundantly by every connected server, but whatever
+  saveConfig: function(key, value) {
+    var self = this;
+    this.client.hset("live", key, value, function(err, reply) {
+      if (err)
+        self.rlog(self, err, reply, "updating live config: " + key + " -> " + value);
+    });
   },
 
   rlog: function(self, err, reply, message, severity) {

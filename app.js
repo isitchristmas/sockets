@@ -8,7 +8,10 @@ var connections = {};
 var welcome = function(connection) {
   connection._user_id = utils.generateId();
   connections[connection._user_id] = connection;
-  send("hello", connection);
+  send("hello", connection, {
+    server: serverId,
+    live: live
+  });
 
   connection.on('data', function(message) {
     if (message.length > 1000) return; // 1KB limit
@@ -108,6 +111,7 @@ var express = require('express')
 // server environment
 var env = (process.env.NODE_ENV || "development")
   , config = require('./config')[env]
+  , live = (config.live || {})
   , port = parseInt(process.env.PORT || config.port || 80);
 
 var utils = require("./utils")
@@ -136,17 +140,45 @@ app.configure(function() {
   });
 });
 
+
 // wipe the users clean on process start, the live ones will heartbeat in
+
 manager.clearUsers();
 manager.logNewServer();
 
-manager.loadConfig(function(live, err) {
+// target is 'client' or 'server'
+manager.onConfig = function(target, key, value) {
+  log.warn("live " + target + " change: " + key + " [" + live[key] + " -> " + value + "]");
+  live[key] = value;
+  log.warn("live config: " + JSON.stringify(live));
+
+  if (target == "client") {
+    broadcast("config", null, {
+      key: key,
+      value: value
+    });
+  }
+};
+
+manager.onCommand = function(command, args) {
+  log.warn("live command: " + command + " (" + args.join(", ") + ")");
+  broadcast("command", null, {
+    command: command,
+    arguments: args
+  });
+}
+
+// get current starting configuration and wait for users
+manager.loadConfig(function(initLive, err) {
   if (err) {
     log.error("Couldn't load live config! Crashing myself")
     throw "Oh nooooooo";
-  } else
-    log.info("Starting up with live config: " + JSON.stringify(live));
+  }
   
-  config.live = live;
+  for (var key in initLive)
+    live[key] = initLive[key];
+
+  log.info("Starting up with live config: " + JSON.stringify(live));
+
   sockets.on('connection', welcome);
 });
