@@ -11,16 +11,32 @@ var redis = require('redis')
 var Manager = function(serverId, config, log) {
   this.serverId = serverId;
 
-  this.enabled = config.enabled;
   this.password = config.password;
   this.host = config.host;
   this.port = config.port;
+  this.default_live = config.default_live;
 
   this.log = log;
-  if (this.enabled) this.init();
+  this.init();
 };
 
 Manager.prototype = {
+
+  loadConfig: function(callback) {
+    var self = this;
+    this.client.hgetall("live", function(err, reply) {
+      if (err) {
+        self.rlog(self, err, reply, "Error fetching live config");
+        callback(null, err);
+      }
+
+      // if the db has nothing, use config.js
+      if (reply == null) 
+        callback(self.default_live);
+      else
+        callback(reply);
+    });
+  },
 
   // return hash indexed by serverId with array of {id, country} objects
   allUsers: function(callback) {

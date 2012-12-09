@@ -4,6 +4,7 @@ function noop() {};
 var deathInterval = 6000;
 
 var connections = {};
+
 var welcome = function(connection) {
   connection._user_id = utils.generateId();
   connections[connection._user_id] = connection;
@@ -78,11 +79,6 @@ on('heartbeat', function(connection, data) {
   setUserHeartbeat(data.id);
 });
 
-// used only for debugging
-// on('echo', function(connection, data) {
-//   log.debug("echo: " + JSON.stringify(data));
-// })
-
 on('motion', rebroadcast);
 
 on('here', function(connection, data) {
@@ -126,7 +122,6 @@ var app = express()
 // start everything
 
 var sockets = sockjs.createServer({log: log});
-sockets.on('connection', welcome);
 sockets.installHandlers(server, {prefix: '/christmas'});
 
 app.get('/', function(req, res) {res.send("Up!");});
@@ -144,3 +139,14 @@ app.configure(function() {
 // wipe the users clean on process start, the live ones will heartbeat in
 manager.clearUsers();
 manager.logNewServer();
+
+manager.loadConfig(function(live, err) {
+  if (err) {
+    log.error("Couldn't load live config! Crashing myself")
+    throw "Oh nooooooo";
+  } else
+    log.info("Starting up with live config: " + JSON.stringify(live));
+  
+  config.live = live;
+  sockets.on('connection', welcome);
+});
