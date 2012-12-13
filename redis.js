@@ -6,7 +6,8 @@
 */
 
 var redis = require('redis')
-  , dateFormat = require('dateformat');
+  , dateFormat = require('dateformat')
+  , os = require('os');
 
 var Manager = function(serverId, config, log) {
   this.serverId = serverId;
@@ -168,6 +169,8 @@ Manager.prototype = {
   },
 
   init: function() {
+    var self = this;
+
     var client = redis.createClient(this.port, this.host)
       , sub = redis.createClient(this.port, this.host)
       , log = this.log
@@ -189,6 +192,11 @@ Manager.prototype = {
       client.auth(this.password);
       sub.auth(this.password);
     }
+
+    // save snapshot of system state every 5s
+    client._system = setInterval(function() {
+      self.systemSnapshot.apply(self);
+    }, 5000);
 
     sub.on('message', function(channel, message) {
       if (channel == "command") {
@@ -224,6 +232,47 @@ Manager.prototype = {
 
     this.client = client;
     this.sub = sub;
+  },
+
+  systemSnapshot: function() {
+    var loadavg = os.loadavg();
+    var state = [
+      os.totalmem().toString().slice(0, -6),
+      os.freemem().toString().slice(0, -6),
+      loadavg[0].toString().slice(0, 4),
+      loadavg[1].toString().slice(0, 4),
+      loadavg[2].toString().slice(0, 4)
+    ].join(":");
+
+    this.client.hset("system", this.serverId, state);
+  },
+
+  getSystem: function(callback) {
+    var self = this;
+
+    this.client.hgetall("system", function(err, reply) {
+      if (err) {
+        self.rlog(self, err, reply, "getting system snapshot");
+        return callback(null);
+      }
+      if (!reply) return callback(null);
+
+      var system = {};
+      Object.keys(reply).forEach(function(id, i) {
+        var serverId = id;
+        var pieces = reply[id].split(":");
+
+        system[serverId] = {
+          totalmem: pieces[0],
+          freemem: pieces[1],
+          loadavg0: pieces[2],
+          loadavg1: pieces[3],
+          loadavg2: pieces[4],
+        };
+      });
+
+      callback(system);
+    });
   },
 
   // load the current live config (on server start)

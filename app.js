@@ -94,10 +94,13 @@ on('here', function(connection, data) {
 
 var dashboard = function(req, res) {
   manager.allUsers(function(servers) {
-    res.render("dashboard", {
-      serverId: serverId,
-      servers: servers,
-      dateFormat: dateFormat
+    manager.getSystem(function(system) {
+      res.render("dashboard", {
+        serverId: serverId,
+        servers: servers,
+        system: system,
+        dateFormat: dateFormat
+      });
     });
   });
 };
