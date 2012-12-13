@@ -135,9 +135,10 @@ Manager.prototype = {
         ["t", user.transport].join("-"),
         ["o", user.os].join("-"),
         ["b", user.browser].join("-"),
+        ["bo", user.browser, user.os].join("-"),
+        ["bt", user.browser, user.transport].join("-"),
         ["bv", user.browser, user.version].join("-"),
-        ["bvo", user.browser, user.version, user.os].join("-"),
-        ["bvot", user.browser, user.version, user.os, user.transport].join("-")
+        ["bvt", user.browser, user.version, user.transport].join("-")
       ].forEach(function(key) {
         self.client.incr(prefix + key);
       })
