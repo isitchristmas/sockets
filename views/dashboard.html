@@ -31,7 +31,7 @@
 
     <% var stats = system[server]; %>
     <% if (stats) { %>
-      <br/><%= stats.freemem %>M/<%= stats.totalmem %>M [<%= [stats.loadavg0, stats.loadavg1, stats.loadavg2].join(", ") %>]
+      <%= stats.freemem %>M/<%= stats.totalmem %>M [<%= [stats.loadavg0, stats.loadavg1, stats.loadavg2].join(", ") %>]
     <% } %>
 
     <% for (i in servers[server]) { %>
