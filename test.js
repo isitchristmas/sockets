@@ -2,10 +2,25 @@ var sjsc = require('sockjs-client');
 var noop = function() {};
 
 
+function start() {
+  for (var n=0; n<4; n++)
+    new User("http://localhost:3000", n);
+}
 
-var User = function(host) {
-  this.socket = sjsc.create(host + "/christmas");
+/****** test client *****/
+// test clients should send a bunch of events but not process received motion/etc
+// the main purpose is to test server throughput,
+// and to connect browser clients to the server while these are running,
+// to observe how browsers handle many people sending events
 
+
+
+var mouse_rate = 40;
+var move_rate = 10;
+
+var User = function(host, n) {
+  if (!n) n = 0;
+  
   this.user = {
     live: {}
   };
@@ -18,6 +33,12 @@ var User = function(host) {
     os: "node"
   };
 
+  this.n = n;
+  this.x = 0;
+  this.y = 0;
+  this.leg = 1;
+
+  this.host = host;
   this.init();
 }
 
@@ -25,13 +46,15 @@ User.prototype = {
   init: function() {
     var self = this;
 
+    this.socket = sjsc.create(this.host + "/christmas");
+
     this.socket.on('connection', function () { 
-      console.log("= Connection established")
+      console.log("= Connected: " + self.n)
     });
 
     this.socket.on('data', function (msg) {
       var data = JSON.parse(msg);
-      (self[data._event] || noop).apply(self, [data]);
+      (self.events[data._event] || noop).apply(self, [data]);
     });
 
     this.socket.on('error', function (e) { 
@@ -45,52 +68,74 @@ User.prototype = {
     this.socket.write(JSON.stringify(data));
   },
 
-  hello: function(data) {
-    this.me.id = data._user_id;
-    this.me.server = data.server;
-    console.log("= Assigned ID: " + this.me.id);
+  events: {
+    arrive: function(data) {
+      this.emit("here", {
+        to: data.id,
+        id: this.me.id,
+        country: this.me.country,
+        transport: this.me.transport
+      });
+    },
 
-    // server-overridden socket options
-    for (var key in data.live)
-      this.user.live[key] = data.live[key];
+    hello: function(data) {
+      this.me.id = data._user_id;
+      this.me.server = data.server;
+      // console.log("= Assigned ID: " + this.me.id);
 
-    // very simple heartbeat, only for server's sake
-    var self = this;
-    var heartbeat = setInterval(function() {
-      self.emit('heartbeat', self.me)
-    }, 3000);
-    
-    this.emit('arrive', this.me);
+      // server-overridden socket options
+      for (var key in data.live)
+        this.user.live[key] = data.live[key];
+
+      // very simple heartbeat, only for server's sake
+      var self = this;
+      var heartbeat = setInterval(function() {
+        self.emit('heartbeat', self.me)
+      }, 3000);
+
+      this.emit('arrive', this.me);
+
+      // kick off automated motion
+      var motion = setInterval(function() {
+        self.move.apply(self);
+      }, mouse_rate);
+    }
   },
 
-  ratelimit: function(fn) {
-    var last = (new Date()).getTime();
-    return (function() {
-      var now = (new Date()).getTime();
-      if ((now - last) > this.user.live.mouse_rate) {
-        last = now;
-        fn.apply(null, arguments);
-      }
+  move: function() {
+    this.emit('motion', {
+      x: this.x + (this.n * 10),
+      y: this.y + (this.n * 10),
+      id: this.me.id,
+      country: this.me.country
     });
+
+    if (this.leg == 1) {
+      if (this.x < 400)
+        this.x += move_rate;
+      else
+        this.leg = 2;
+    }
+    if (this.leg == 2) {
+      if (this.y < 400)
+        this.y += move_rate;
+      else
+        this.leg = 3;
+    }
+    if (this.leg == 3) {
+      if (this.x > 0)
+        this.x -= move_rate;
+      else
+        this.leg = 4;
+    }
+    if (this.leg == 4) {
+      if (this.y > 0)
+        this.y -= move_rate;
+      else
+        this.leg = 1;
+    }
   }
+  
 }
 
-/****** test client *****/
-// test clients should send a bunch of events but not process received motion/etc
-// the main purpose is to test server throughput,
-// and to connect browser clients to the server while these are running,
-// to observe how browsers handle many people sending events
-
-
-function connect(host) {
-  if (!host) host = "http://localhost:3000"
-  return new User(host);
-}
-
-module.exports = {connect: connect};
-
-/* test in repl with
-
-var u = require("./test").connect();
-
-*/
+start();
