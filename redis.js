@@ -7,7 +7,8 @@
 
 var redis = require('redis')
   , dateFormat = require('dateformat')
-  , os = require('os');
+  , os = require('os')
+  , time = require('time')(Date);
 
 var Manager = function(serverId, config, log) {
   this.serverId = serverId;
@@ -42,6 +43,10 @@ Manager.prototype = {
         var keyPieces = id.split(":");
         var valuePieces = reply[id].split(":");
 
+        // convert user time to EST, for my own sanity in watching activity
+        var estTime = new Date(parseInt(valuePieces[5]));
+        estTime.setTimezone("America/New_York");
+
         var server = keyPieces[0];
         var user = {
           id: keyPieces[1],
@@ -50,7 +55,7 @@ Manager.prototype = {
           browser: valuePieces[2],
           version: valuePieces[3],
           os: valuePieces[4],
-          time: valuePieces[5]
+          time: estTime
         };
 
         if (!users[server]) users[server] = [];
