@@ -29,13 +29,13 @@
     (<%= servers[server].length %>)
     <%= server == serverId ? "*" : "" %>
 
+    <% var stats = system[server]; %>
+    <% if (stats) { %>
+      <br/><%= stats.freemem %>M/<%= stats.totalmem %>M [<%= [stats.loadavg0, stats.loadavg1, stats.loadavg2].join(", ") %>]
+    <% } %>
+
     <% for (i in servers[server]) { %>
       <% var user = servers[server][i]; %>
-      <% var stats = system[server]; %>
-
-      <% if (stats) { %>
-        <br/><%= stats.freemem %>M/<%= stats.totalmem %>M [<%= [stats.loadavg0, stats.loadavg1, stats.loadavg2].join(", ") %>]
-      <% } %>
 
       <br/>&nbsp;&nbsp;<%= dateFormat(parseInt(user.time), "HH:MM") %> (<%= user.country %>) <%= user.id.slice(0,6) %> [<%= user.transport %>][<%= user.browser %>-<%= user.version %>-<%= user.os %>]
     <% } %>
