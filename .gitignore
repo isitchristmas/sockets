@@ -2,3 +2,4 @@
 /*.txt
 
 /node_modules/sockjs-client
+*.rdb
