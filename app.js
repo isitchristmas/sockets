@@ -128,10 +128,7 @@ var app = express()
 
 // start everything
 
-var sockets = sockjs.createServer({
-  log: log,
-  sockjs_url: config.sockjs_url
-});
+var sockets = sockjs.createServer({log: log});
 sockets.installHandlers(server, {prefix: '/christmas'});
 
 app.get('/', function(req, res) {res.send("Up!");});
