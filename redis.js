@@ -127,6 +127,17 @@ Manager.prototype = {
     // accumulate counters of various combos
     // accumulate both for all-time, and for the date (mmdd:*)
 
+    if (!user.browser || !user.os || !user.transport || !user.country) {
+      self.log.error("user.browser: " + user.browser);
+      self.log.error("user.os: " + user.os);
+      self.log.error("user.transport: " + user.transport);
+      self.log.error("user.country: " + user.country);
+      user.browser = user.browser || "unknown";
+      user.os = user.os || "unknown";
+      user.transport = user.transport || "unknown";
+      user.country = user.country || "unknown";
+    }
+
     ["all:", date + ":"].forEach(function(prefix) {
       self.client.sadd(prefix + "browsers", user.browser);
       self.client.sadd(prefix + "oses", user.os);
