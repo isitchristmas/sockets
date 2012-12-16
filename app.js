@@ -83,6 +83,7 @@ on('heartbeat', function(connection, data) {
 });
 
 on('motion', rebroadcast);
+on('click', rebroadcast);
 
 on('here', function(connection, data) {
   if (connections[data.to])
