@@ -128,6 +128,7 @@ Manager.prototype = {
     // accumulate both for all-time, and for the date (mmdd:*)
 
     if (!user.browser || !user.os || !user.transport || !user.country) {
+      self.log.error("possible sadd issue");
       self.log.error("user.browser: " + user.browser);
       self.log.error("user.os: " + user.os);
       self.log.error("user.transport: " + user.transport);
