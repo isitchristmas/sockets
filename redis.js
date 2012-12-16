@@ -18,8 +18,7 @@ var Manager = function(serverId, config, log) {
   this.port = config.port;
   this.default_live = config.default_live;
 
-  // noop
-  this.onClient = this.onServer = this.onCommand = function() {};
+  this.onConfig = this.onCommand = function() {};
 
   this.log = log;
   this.init();
