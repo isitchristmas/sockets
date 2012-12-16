@@ -1,9 +1,9 @@
 {
-  "name": "sockets-staging",
-  "version": "0.6.10",
+  "name": "sockets",
+  "version": "0.7.0",
   "private": true,
 
-  "subdomain": "iic_sockets_staging",
+  "subdomain": "iic_sockets",
   "domains": [
     
   ],
