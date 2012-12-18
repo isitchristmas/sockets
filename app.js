@@ -1,7 +1,6 @@
 var events = {};
 function on(event, func) {events[event] = func;}
 function noop() {};
-var deathInterval = 6000;
 
 var connections = {};
 
@@ -59,6 +58,7 @@ var userLeft = function(id, cause) {
 }
 
 var setUserHeartbeat = function(id) {
+  console.log(live.death_interval);
   if (connections[id]) {
     clearTimeout(connections[id]._heartbeat);
     connections[id]._heartbeat = setTimeout(function() {
@@ -67,7 +67,7 @@ var setUserHeartbeat = function(id) {
         connections[id]._timed_out = true;
         connections[id].close();
       }
-    }, deathInterval);
+    }, live.death_interval);
   }
 }
 
