@@ -96,7 +96,8 @@ Manager.prototype = {
     var key = [this.serverId, userId].join(":");
 
     this.client.hdel("users", key, function(err, reply) {
-      var severity = (cause == "timed out" ? "warn" : "info");
+      //var severity = (cause == "timed out" ? "warn" : "info");
+      var severity = "info"; // always info, timeouts are just frequent
       self.rlog(self, err, reply, cause + " user: " + userId, severity);
     })
 
@@ -259,6 +260,7 @@ Manager.prototype = {
     var line = [name, country, message].join(":");
     this.client.publish("chat", line);
     this.client.rpush("chat", line);
+    this.log.warn("[chat] [" + country + "] " + name + ": " + message);
   },
 
   systemSnapshot: function() {
