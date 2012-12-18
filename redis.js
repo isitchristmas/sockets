@@ -18,7 +18,7 @@ var Manager = function(serverId, config, log) {
   this.port = config.port;
   this.default_live = config.default_live;
 
-  this.onConfig = this.onCommand = function() {};
+  this.onConfig = this.onCommand = this.onChat = function() {};
 
   this.log = log;
   this.init();
@@ -219,6 +219,9 @@ Manager.prototype = {
         var args = message.split(":");
         var command = args.shift();
         self.onCommand(command, args);
+      } else if (channel == "chat") {
+        var pieces = message.split(":");
+        self.onChat(pieces[0], pieces[1], pieces[2]);
       } else { // "client", "server"
         var pieces = message.split(":");
         self.onConfig(channel, pieces[0], pieces[1]);
@@ -240,6 +243,7 @@ Manager.prototype = {
       sub.subscribe("client");
       sub.subscribe("server");
       sub.subscribe("command");
+      sub.subscribe("chat");
     });
 
     sub._heartbeat = setInterval(function() {
@@ -248,6 +252,11 @@ Manager.prototype = {
 
     this.client = client;
     this.sub = sub;
+  },
+
+  publishChat: function(id, country, message) {
+    message = message.replace(/:/g, ";"); // reduce colons by half
+    this.client.publish("chat", [id, country, message].join(":"))
   },
 
   systemSnapshot: function() {

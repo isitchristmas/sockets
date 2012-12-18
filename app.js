@@ -82,12 +82,18 @@ on('heartbeat', function(connection, data) {
   setUserHeartbeat(data.id);
 });
 
+// quickly shuttle mouse events through the system
 on('motion', rebroadcast);
 on('click', rebroadcast);
 
 on('here', function(connection, data) {
   if (connections[data.to])
     send('here', connections[data.to], data);
+});
+
+on('chat', function(connection, data) {
+  manager.publishChat(data.id, data.country, data.message);
+  // TODO: manager.saveChat(data.id, data.country, data.message);
 });
 
 
@@ -150,6 +156,11 @@ app.configure(function() {
 manager.clearUsers();
 manager.logNewServer();
 
+
+/***********
+ handling pub/sub events
+************/
+
 // target is 'client' or 'server'
 manager.onConfig = function(target, key, value) {
   log.warn("live " + target + " change: " + key + " [" + live[key] + " -> " + value + "]");
@@ -162,6 +173,15 @@ manager.onConfig = function(target, key, value) {
       value: value
     });
   }
+};
+
+manager.onChat = function(user_id, country, message) {
+  log.debug("chat message")
+  broadcast("chat", null, {
+    user_id: user_id,
+    country: country,
+    message: message
+  });
 };
 
 manager.onCommand = function(command, args) {
