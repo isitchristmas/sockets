@@ -254,9 +254,9 @@ Manager.prototype = {
     this.sub = sub;
   },
 
-  publishChat: function(id, country, message) {
+  publishChat: function(name, country, message) {
     message = message.replace(/:/g, ";"); // reduce colons by half
-    this.client.publish("chat", [id, country, message].join(":"))
+    this.client.publish("chat", [name, country, message].join(":"));
   },
 
   systemSnapshot: function() {

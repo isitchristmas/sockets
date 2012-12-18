@@ -8,9 +8,11 @@ var connections = {};
 var welcome = function(connection) {
   connection._user_id = utils.generateId();
   connections[connection._user_id] = connection;
+
   send("hello", connection, {
     server: serverId,
-    live: live
+    live: live,
+    name: utils.randomName()
   });
 
   connection.on('data', function(message) {
@@ -92,8 +94,8 @@ on('here', function(connection, data) {
 });
 
 on('chat', function(connection, data) {
-  manager.publishChat(data.id, data.country, data.message);
-  // TODO: manager.saveChat(data.id, data.country, data.message);
+  manager.publishChat(data.name, data.country, data.message);
+  // TODO: manager.saveChat(data.name, data.country, data.message);
 });
 
 
@@ -175,10 +177,10 @@ manager.onConfig = function(target, key, value) {
   }
 };
 
-manager.onChat = function(user_id, country, message) {
+manager.onChat = function(name, country, message) {
   log.debug("chat message")
   broadcast("chat", null, {
-    user_id: user_id,
+    name: name,
     country: country,
     message: message
   });

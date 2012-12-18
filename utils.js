@@ -1,4 +1,5 @@
 var crypto = require('crypto');
+var names = require('./names');
 
 var severities = {error: 1, warn: 1, info: 2, debug: 3};
 
@@ -61,5 +62,9 @@ module.exports = {
     });
 
     return func;
+  },
+
+  randomName: function() {
+    return names[Math.floor(Math.random() * names.length)];
   }
 };
