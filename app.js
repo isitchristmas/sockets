@@ -58,7 +58,6 @@ var userLeft = function(id, cause) {
 }
 
 var setUserHeartbeat = function(id) {
-  console.log(live.death_interval);
   if (connections[id]) {
     clearTimeout(connections[id]._heartbeat);
     connections[id]._heartbeat = setTimeout(function() {
