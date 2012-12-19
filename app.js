@@ -93,8 +93,7 @@ on('here', function(connection, data) {
 });
 
 on('chat', function(connection, data) {
-  manager.publishChat(data.name, data.country, data.message);
-  // TODO: manager.saveChat(data.name, data.country, data.message);
+  manager.newChat(data.time, data.name, data.country, data.message);
 });
 
 
@@ -177,7 +176,6 @@ manager.onConfig = function(target, key, value) {
 };
 
 manager.onChat = function(name, country, message) {
-  log.debug("chat message")
   broadcast("chat", null, {
     name: name,
     country: country,

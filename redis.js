@@ -223,7 +223,7 @@ Manager.prototype = {
       } else if (channel == "chat") {
         // don't delimit with colons, human expression online is primarily colon based
         var pieces = message.split("|");
-        self.onChat(pieces[0], pieces[1], pieces[2]);
+        self.onChat(pieces[1], pieces[2], pieces[3]);
       } else { // "client", "server"
         var pieces = message.split(":");
         self.onConfig(channel, pieces[0], pieces[1]);
@@ -256,12 +256,12 @@ Manager.prototype = {
     this.sub = sub;
   },
 
-  publishChat: function(name, country, message) {
+  newChat: function(time, name, country, message) {
     // clean name and message of delimiters
     name = name.replace(/\|/g, "/");
     message = message.replace(/\|/g, "/");
 
-    var line = [name, country, message].join("|");
+    var line = [time, name, country, message].join("|");
 
     this.client.publish("chat", line);
     this.client.rpush("chat", line);
