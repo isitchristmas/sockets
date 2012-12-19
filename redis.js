@@ -273,6 +273,7 @@ Manager.prototype = {
     var state = [
       os.totalmem().toString().slice(0, -6),
       os.freemem().toString().slice(0, -6),
+      process.memoryUsage().rss.toString().slice(0, -6),
       loadavg[0].toString().slice(0, 4),
       loadavg[1].toString().slice(0, 4),
       loadavg[2].toString().slice(0, 4)
@@ -299,9 +300,10 @@ Manager.prototype = {
         system[serverId] = {
           totalmem: pieces[0],
           freemem: pieces[1],
-          loadavg0: pieces[2],
-          loadavg1: pieces[3],
-          loadavg2: pieces[4],
+          rss: pieces[2],
+          loadavg0: pieces[3],
+          loadavg1: pieces[4],
+          loadavg2: pieces[5]
         };
       });
 
