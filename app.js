@@ -3,12 +3,14 @@ function on(event, func) {events[event] = func;}
 function noop() {};
 
 var connections = {};
+var connectionsList = [];
 
 var welcome = function(connection) {
   connection._user_id = utils.generateId();
   connections[connection._user_id] = connection;
 
   send("hello", connection, {
+    _user_id: connection._user_id,
     server: serverId,
     live: live,
     name: utils.randomName()
@@ -19,7 +21,7 @@ var welcome = function(connection) {
 
     try {
       var data = JSON.parse(message);
-      (events[data._event] || noop)(connection, data);
+      (events[data._event] || noop)(connection, data, message);
     } catch (e) {
       log.error("Error parsing message - " + message);
       log.error(e);
@@ -32,23 +34,28 @@ var welcome = function(connection) {
 };
 
 var send = function(event, connection, object) {
-  object = object || {};
   object._event = event;
-  if (connection) {
-    object._user_id = connection._user_id;
+  if (connection)
     connection.write(JSON.stringify(object));
-  }
 }
 
+// used to broadcast messages that need serialization first
 var broadcast = function(event, from, object) {
+  object._event = event;
+  var serialized = JSON.stringify(object);
   for (id in connections) {
     if (id != from)
-      send(event, connections[id], object);
+      connections[id].write(serialized);
   }
 }
 
-var rebroadcast = function(connection, data) {
-  broadcast(data._event, connection._user_id, data);
+// even thinner layer, just shuttle the original message to others
+var rebroadcast = function(connection, data, original) {
+  var from = connection._user_id;
+  for (id in connections) {
+    if (id != from)
+      connections[id].write(original);
+  }
 }
 
 var userLeft = function(id, cause) {
@@ -72,8 +79,12 @@ var setUserHeartbeat = function(id) {
 
 // events 
 
-on('arrive', function(connection, data) {
-  rebroadcast(connection, data);
+// quickly shuttle mouse events through the system
+on('motion', rebroadcast);
+on('click', rebroadcast);
+
+on('arrive', function(connection, data, original) {
+  rebroadcast(connection, data, original);
   manager.addUser(data);
   setUserHeartbeat(data.id);
 });
@@ -82,10 +93,6 @@ on('heartbeat', function(connection, data) {
   send('heartbeat', connections[data.id], data);
   setUserHeartbeat(data.id);
 });
-
-// quickly shuttle mouse events through the system
-on('motion', rebroadcast);
-on('click', rebroadcast);
 
 on('here', function(connection, data) {
   if (connections[data.to])
