@@ -33,13 +33,14 @@ var welcome = function(connection) {
   });
 };
 
+// send a single message to be serialized
 var send = function(event, connection, object) {
   object._event = event;
   if (connection)
     connection.write(JSON.stringify(object));
 }
 
-// used to broadcast messages that need serialization first
+// broadcast a single message to be serialized
 var broadcast = function(event, from, object) {
   object._event = event;
   var serialized = JSON.stringify(object);
