@@ -12,57 +12,68 @@
 </head>
 <body>
 
-<h1>Active Users</h1>
-
 <% if (servers == null) { %>
   
   <h2>Error connecting to Redis manager.</h2>
 
-<% } else if (servers.length == 0) { %>
-  
-  <h2>No users right now.</h2>
-
 <% } else { %>
 
-  <% for(server in servers) { %>
-    [<%= server %>]
-    (<%= servers[server].length %>)
-    <%= server == serverId ? "*" : "" %>
-
-    <% var stats = system[server]; %>
-    <% if (stats) { %>
-      [<%= [stats.loadavg0, stats.loadavg1, stats.loadavg2].join(", ") %>] (<%= stats.rss %>M)
-    <% } %>
-    <br/>
+  <% var userCount = 0; %>
+  <% var serverCount = 0; %>
+  <% for (server in servers) { %>
+    <% serverCount += 1 %>
+    <% userCount += servers[server].length %>
   <% } %>
 
-  <br/>
-  <% var mod = 1; %>
-  <table>
-  <tr>
+  <h1><%= serverCount %> Drones, <%= userCount %> Active Users</h1>
 
-  <% for(server in servers) { %>
-    <td>
+  <% if (servers.length == 0) { %>
     
-    [<%= server %>]
-    (<%= servers[server].length %>)
-    <%= server == serverId ? "*" : "" %>
+    <h2>No users right now.</h2>
 
-    <% var stats = system[server]; %>
-    <% if (stats) { %>
-      [<%= [stats.loadavg0, stats.loadavg1, stats.loadavg2].join(", ") %>] (<%= stats.rss %>M)
+  <% } else { %>
+
+    <% for(server in servers) { %>
+      [<%= server %>]
+      (<%= servers[server].length %>)
+
+      <% var stats = system[server]; %>
+      <% if (stats) { %>
+        [<%= [stats.loadavg0, stats.loadavg1, stats.loadavg2].join(", ") %>] (<%= stats.rss %>M)
+      <% } %>
+      <%= server == serverId ? "*" : "" %>
+      <br/>
     <% } %>
 
-    <% for (i in servers[server]) { %>
-      <% var user = servers[server][i]; %>
+    <br/>
+    <% var mod = 1; %>
+    <table>
+    <tr>
 
-      <br/><%= dateFormat(user.time, "HH:MM") %> (<%= user.country %>) [<%= user.transport %>][<%= user.browser %>-<%= user.version %>-<%= user.os %>]
+    <% for(server in servers) { %>
+      <td>
+      
+      [<%= server %>]
+      (<%= servers[server].length %>)
+
+      <% var stats = system[server]; %>
+      <% if (stats) { %>
+        [<%= [stats.loadavg0, stats.loadavg1, stats.loadavg2].join(", ") %>] (<%= stats.rss %>M)
+      <% } %>
+      <%= server == serverId ? "*" : "" %>
+
+      <% for (i in servers[server]) { %>
+        <% var user = servers[server][i]; %>
+
+        <br/><%= dateFormat(user.time, "HH:MM") %> <%= user.country %> <%= user.transport %> <%= user.browser %>-<%= user.version %>-<%= user.os %>
+      <% } %>
+      </td>
+      <% if (mod % 3 == 0) { %>
+        </tr><tr>
+      <% } %>
+      <% mod += 1 %>
     <% } %>
-    </td>
-    <% if (mod % 3 == 0) { %>
-      </tr><tr>
-    <% } %>
-    <% mod += 1 %>
+
   <% } %>
 
 <% } %>
