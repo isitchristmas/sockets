@@ -7,6 +7,7 @@
     html {font-family: monospace; font-size: 125%;}
     h1 {font-size: 120%;}
     h2 {font-size: 100%;}
+    td {padding-right: 40px; padding-top: 10px;}
   </style>
 </head>
 <body>
@@ -24,22 +25,44 @@
 <% } else { %>
 
   <% for(server in servers) { %>
-    <p>
     [<%= server %>]
     (<%= servers[server].length %>)
     <%= server == serverId ? "*" : "" %>
 
     <% var stats = system[server]; %>
     <% if (stats) { %>
-      <%= stats.freemem %>M/<%= stats.totalmem %>M [<%= [stats.loadavg0, stats.loadavg1, stats.loadavg2].join(", ") %>] (rss: <%= stats.rss %>M)
+      [<%= [stats.loadavg0, stats.loadavg1, stats.loadavg2].join(", ") %>] (<%= stats.rss %>M)
+    <% } %>
+    <br/>
+  <% } %>
+
+  <br/>
+  <% var mod = 1; %>
+  <table>
+  <tr>
+
+  <% for(server in servers) { %>
+    <td>
+    
+    [<%= server %>]
+    (<%= servers[server].length %>)
+    <%= server == serverId ? "*" : "" %>
+
+    <% var stats = system[server]; %>
+    <% if (stats) { %>
+      [<%= [stats.loadavg0, stats.loadavg1, stats.loadavg2].join(", ") %>] (<%= stats.rss %>M)
     <% } %>
 
     <% for (i in servers[server]) { %>
       <% var user = servers[server][i]; %>
 
-      <br/>&nbsp;&nbsp;<%= dateFormat(user.time, "HH:MM") %> (<%= user.country %>) <%= user.id.slice(0,6) %> [<%= user.transport %>][<%= user.browser %>-<%= user.version %>-<%= user.os %>]
+      <br/>&nbsp;&nbsp;<%= dateFormat(user.time, "HH:MM") %> (<%= user.country %>) [<%= user.transport %>][<%= user.browser %>-<%= user.version %>-<%= user.os %>]
     <% } %>
-    </p>
+    </td>
+    <% if (mod % 3 == 0) { %>
+      </tr><tr>
+    <% } %>
+    <% mod += 1 %>
   <% } %>
 
 <% } %>
