@@ -3,12 +3,11 @@ function on(event, func) {events[event] = func;}
 function noop() {};
 
 var connections = {};
-var connectionsList = [];
 
 var welcome = function(connection) {
   connection._user_id = utils.generateId();
   connections[connection._user_id] = connection;
-
+  
   send("hello", connection, {
     _user_id: connection._user_id,
     server: serverId,
@@ -58,9 +57,9 @@ var rebroadcast = function(connection, data, original) {
       connections[id].write(original);
   }
 }
-
 var userLeft = function(id, cause) {
   delete connections[id];
+
   broadcast("leave", id, {id: id});
   manager.removeUser(id, cause);
 }
@@ -83,6 +82,30 @@ var setUserHeartbeat = function(id) {
 // quickly shuttle mouse events through the system
 on('motion', rebroadcast);
 on('click', rebroadcast);
+
+// on('benchmark1', function(connection, data, original) {
+//   var start = Date.now();
+//   for (var i =0; i<10000; i++) 
+//     rebroadcast(connection, data, original);
+//   var elapsed = Date.now() - start;
+  
+//   send('command', connection, {
+//     command: 'blast',
+//     arguments: ["Finished benchmark1 in " + elapsed + "ms"]
+//   })
+// })
+
+// on('benchmark2', function(connection, data, original) {
+//   var start = Date.now();
+//   for (var i =0; i<10000; i++) 
+//     rebroadcast2(connection, data, original);
+//   var elapsed = Date.now() - start;
+  
+//   send('command', connection, {
+//     command: 'blast',
+//     arguments: ["Finished benchmark2 in " + elapsed + "ms"]
+//   })
+// })
 
 on('arrive', function(connection, data, original) {
   rebroadcast(connection, data, original);
