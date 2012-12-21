@@ -7,7 +7,7 @@
     html {font-family: monospace; font-size: 125%;}
     h1 {font-size: 120%;}
     h2 {font-size: 100%;}
-    td {padding-right: 40px; padding-top: 10px;}
+    td {padding-right: 20px; padding-top: 10px; vertical-align: top;}
   </style>
 </head>
 <body>
@@ -56,7 +56,7 @@
     <% for (i in servers[server]) { %>
       <% var user = servers[server][i]; %>
 
-      <br/>&nbsp;&nbsp;<%= dateFormat(user.time, "HH:MM") %> (<%= user.country %>) [<%= user.transport %>][<%= user.browser %>-<%= user.version %>-<%= user.os %>]
+      <br/><%= dateFormat(user.time, "HH:MM") %> (<%= user.country %>) [<%= user.transport %>][<%= user.browser %>-<%= user.version %>-<%= user.os %>]
     <% } %>
     </td>
     <% if (mod % 3 == 0) { %>
