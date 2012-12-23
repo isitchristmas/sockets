@@ -115,6 +115,7 @@ on('arrive', function(connection, data, original) {
 
 on('heartbeat', function(connection, data) {
   send('heartbeat', connections[data.id], data);
+  manager.addUser(data, true); // update user
   setUserHeartbeat(data.id);
 });
 

@@ -66,7 +66,7 @@ Manager.prototype = {
   },
 
   // a user has joined, add them to the list and log a bunch of analytics about them
-  addUser: function(user) {
+  addUser: function(user, heartbeat) {
     var self = this;
 
     var key = [this.serverId, user.id].join(":");
@@ -86,10 +86,12 @@ Manager.prototype = {
         self.rlog(self, err, reply, "keeping user: " + user.id, "debug");
     });
 
-    if (user.alreadyArrived)
-      this.logReconnect(user);
-    else
-      this.logVisit(user);
+    if (!heartbeat) {
+      if (user.alreadyArrived)
+        this.logReconnect(user);
+      else
+        this.logVisit(user);
+    }
   },
 
   // a user has left, mark that, and if it was a timeout, warn and log it
