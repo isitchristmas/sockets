@@ -1,7 +1,9 @@
 <!doctype html>
 <html>
 <head>
-  <meta http-equiv="refresh" content="5">
+  <% if (!req.param("no_refresh")) { %>
+    <meta http-equiv="refresh" content="5">
+  <% } %>
   <title>The North Pole</title>
   <style>
     html {font-family: monospace; font-size: 125%;}
@@ -14,7 +16,7 @@
 
 <% if (servers == null) { %>
   
-  <h2>Error connecting to Redis manager.</h2>
+  <h2>Error connecting to Redis.</h2>
 
 <% } else { %>
 

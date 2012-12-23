@@ -141,7 +141,8 @@ var dashboard = function(req, res) {
         serverId: serverId,
         servers: servers,
         system: system,
-        dateFormat: dateFormat
+        dateFormat: dateFormat,
+        req: req
       });
     });
   });
