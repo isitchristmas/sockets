@@ -86,7 +86,10 @@ Manager.prototype = {
         self.rlog(self, err, reply, "keeping user: " + user.id, "debug");
     });
 
-    this.logVisit(user);
+    if (user.alreadyArrived)
+      this.logReconnect(user);
+    else
+      this.logVisit(user);
   },
 
   // a user has left, mark that, and if it was a timeout, warn and log it
@@ -117,6 +120,23 @@ Manager.prototype = {
     });
   },
 
+  // log number of reconnects all-time, today, and in a 10-minute span
+  logReconnect: function(user) {
+    var self = this;
+    var now = new Date();
+    
+    var date = dateFormat(now.getTime(), "mmdd");
+
+    var minutes = now.getMinutes();
+    minutes = minutes - (minutes % 10); // round down to 10-minute floor
+    minutes = (minutes < 10) ? ("0" + minutes) : ("" + minutes); // 0-prefix
+    var span = date + dateFormat(now.getTime(), "HH") + minutes;
+
+    ["all", date, span].forEach(function(prefix) {
+      self.client.incr(prefix + ":reconnects");
+    });
+  },
+
   // store anonymous visit analytics
   // vital to understanding who is and isn't able to establish connections,
   // especially when compared to conventional metrics like Google Analytics
@@ -128,6 +148,7 @@ Manager.prototype = {
     // accumulate counters of various combos
     // accumulate both for all-time, and for the date (mmdd:*)
 
+    // not sure where this would come from, but I see it now and then
     if (!user.browser || !user.os || !user.transport || !user.country) {
       self.log.error("possible sadd issue");
       self.log.error("user.browser: " + user.browser);
