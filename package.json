@@ -1,9 +1,9 @@
 {
-  "name": "sockets",
+  "name": "admin",
   "version": "1.0.14",
   "private": true,
 
-  "subdomain": "iic_sockets",
+  "subdomain": "iic_admin",
   "domains": [
     
   ],

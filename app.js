@@ -129,7 +129,6 @@ on('chat', function(connection, data) {
 
 
 // admin area
-
 var dashboard = function(req, res) {
   manager.allUsers(function(servers) {
     manager.getSystem(function(system) {
@@ -156,7 +155,7 @@ var env = (process.env.NODE_ENV || "development")
   , port = parseInt(process.env.PORT || config.port || 80);
 
 var utils = require("./utils")
-  , serverId = utils.generateId(6)
+  , serverId = (env == "admin" ? "admin" : utils.generateId(6))
   , log = utils.logger(serverId, config)
   , manager = require("./redis")(serverId, config.redis, log);
 
