@@ -1,9 +1,9 @@
 {
-  "name": "admin",
-  "version": "1.0.14",
+  "name": "sockets",
+  "version": "1.0.17",
   "private": true,
 
-  "subdomain": "iic_admin",
+  "subdomain": "iic_sockets",
   "domains": [
     
   ],

@@ -124,7 +124,12 @@ on('here', function(connection, data) {
 });
 
 on('chat', function(connection, data) {
-  manager.newChat(data.time, data.name, data.country, data.message);
+  manager.isBanned(data.id, function(answer) {
+    if (answer)
+      onBannedChat(data.id, data.name, data.country, data.message);
+    else
+      manager.newChat(data.id, data.time, data.name, data.country, data.message);
+  });
 });
 
 
@@ -212,6 +217,18 @@ manager.onChat = function(name, country, message) {
     message: message
   });
 };
+
+// this should only happen for someone on this server
+var onBannedChat = function(id, name, country, message) {
+  log.warn("[banned] [" + id + "] [" + country + "] " + name + ": " + message);
+  if (connections[id]) {
+    send("chat", connections[id], {
+      name: name,
+      country: country,
+      message: message
+    });
+  }
+}
 
 manager.onCommand = function(command, args) {
   log.warn("live command: " + command + " (" + args.join(", ") + ")");

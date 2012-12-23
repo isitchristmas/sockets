@@ -244,7 +244,7 @@ Manager.prototype = {
       } else if (channel == "chat") {
         // don't delimit with colons, human expression online is primarily colon based
         var pieces = message.split("|");
-        self.onChat(pieces[1], pieces[2], pieces[3]);
+        self.onChat(pieces[2], pieces[3], pieces[4]);
       } else { // "client", "server"
         var pieces = message.split(":");
         self.onConfig(channel, pieces[0], pieces[1]);
@@ -277,16 +277,22 @@ Manager.prototype = {
     this.sub = sub;
   },
 
-  newChat: function(time, name, country, message) {
+  newChat: function(id, time, name, country, message) {
     // clean name and message of delimiters
     name = name.replace(/\|/g, "/");
     message = message.replace(/\|/g, "/");
 
-    var line = [time, name, country, message].join("|");
-
+    var line = [id, time, name, country, message].join("|");
     this.client.publish("chat", line);
     this.client.rpush("chat", line);
-    this.log.warn("[chat] [" + country + "] " + name + ": " + message);
+
+    this.log.warn("[chat] [" + id + "] [" + country + "] " + name + ": " + message);
+  },
+
+  isBanned: function(id, callback) {
+    this.client.sismember("banned", id, function(err, reply) {
+      callback(reply == "1");
+    });
   },
 
   systemSnapshot: function() {
