@@ -125,6 +125,8 @@ on('here', function(connection, data) {
 });
 
 on('chat', function(connection, data) {
+  if (live.chat != "true") return;
+  
   manager.isBanned(data.id, function(answer) {
     if (answer)
       onBannedChat(data.id, data.name, data.country, data.message);
