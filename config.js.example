@@ -17,7 +17,7 @@ module.exports = {
 
     // will be overridden by values in redis
     live: {
-      chat: true,
+      chat: "true",
       death_interval: 10000
     },
 
@@ -36,7 +36,7 @@ module.exports = {
 
     // will be overridden by values in redis
     live: {
-      chat: true,
+      chat: "true",
       death_interval: 10000
     },
 
