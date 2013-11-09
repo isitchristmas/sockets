@@ -5,9 +5,9 @@
 
   "subdomain": "iic_sockets",
   "domains": [
-    
+
   ],
-  "engines": {"node": "0.8.x"},
+  "engines": {"node": "0.10.x"},
 
   "scripts": {
     "start": "node app.js"
