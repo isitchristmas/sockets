@@ -19,7 +19,8 @@ module.exports = {
     live: {
       chat: "true",
       death_interval: 60000,
-      heartbeat_interval: 35000
+      heartbeat_interval: 35000,
+      mouse_rate: 20
     },
 
     logentries: null
@@ -39,7 +40,8 @@ module.exports = {
     live: {
       chat: "true",
       death_interval: 60000,
-      heartbeat_interval: 35000
+      heartbeat_interval: 35000,
+      mouse_rate: 20
     },
 
     logentries: null
