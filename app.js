@@ -7,7 +7,7 @@ var connections = {};
 var welcome = function(connection) {
   connection._user_id = utils.generateId();
   connections[connection._user_id] = connection;
-  
+
   send("hello", connection, {
     _user_id: connection._user_id,
     server: serverId,
@@ -77,35 +77,11 @@ var setUserHeartbeat = function(id) {
   }
 }
 
-// events 
+// events
 
 // quickly shuttle mouse events through the system
 on('motion', rebroadcast);
 on('click', rebroadcast);
-
-// on('benchmark1', function(connection, data, original) {
-//   var start = Date.now();
-//   for (var i =0; i<10000; i++) 
-//     rebroadcast(connection, data, original);
-//   var elapsed = Date.now() - start;
-  
-//   send('command', connection, {
-//     command: 'blast',
-//     arguments: ["Finished benchmark1 in " + elapsed + "ms"]
-//   })
-// })
-
-// on('benchmark2', function(connection, data, original) {
-//   var start = Date.now();
-//   for (var i =0; i<10000; i++) 
-//     rebroadcast2(connection, data, original);
-//   var elapsed = Date.now() - start;
-  
-//   send('command', connection, {
-//     command: 'blast',
-//     arguments: ["Finished benchmark2 in " + elapsed + "ms"]
-//   })
-// })
 
 on('arrive', function(connection, data, original) {
   rebroadcast(connection, data, original);
@@ -126,7 +102,7 @@ on('here', function(connection, data) {
 
 on('chat', function(connection, data) {
   if (live.chat != "true") return;
-  
+
   manager.isBanned(data.id, function(answer) {
     if (answer)
       onBannedChat(data.id, data.name, data.country, data.message);
@@ -248,7 +224,7 @@ manager.loadConfig(function(initLive, err) {
     log.error("Couldn't load live config! Crashing myself")
     throw "Oh nooooooo";
   }
-  
+
   for (var key in initLive)
     live[key] = initLive[key];
 
