@@ -72,7 +72,7 @@ Manager.prototype = {
 
     var key = [this.serverId, connection._user.id].join(":");
     var value = [
-      user.country,
+      connection._user.country,
       user.transport,
       user.browser,
       user.version,
@@ -247,7 +247,7 @@ Manager.prototype = {
       } else if (channel == "chat") {
         // don't delimit with colons, human expression online is primarily colon based
         var pieces = message.split("|");
-        self.onChat(pieces[2], pieces[3], pieces[4]);
+        self.onChat(pieces[0], pieces[2], pieces[3], pieces[4]);
       } else { // "client", "server"
         var pieces = message.split(":");
         self.onConfig(channel, pieces[0], pieces[1]);

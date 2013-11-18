@@ -84,6 +84,7 @@ var setUserHeartbeat = function(id) {
   }
 }
 
+
 // events
 
 // quickly shuttle mouse events through the system
@@ -92,6 +93,9 @@ on('click', rebroadcast);
 
 on('arrive', function(connection, data, original) {
   rebroadcast(connection, data, original);
+
+  // country is set here, trusted henceforth
+  connection._user.country = data.country;
 
   manager.addUser(connection, data, false); // new user
   setUserHeartbeat(connection._user.id);
@@ -104,18 +108,34 @@ on('heartbeat', function(connection, data) {
 });
 
 on('here', function(connection, data) {
-  if (connections[data.to])
-    send('here', connections[data.to], data);
+  to = connections[data.to];
+  if (to) {
+    data.country = to._user.country;
+    data.id = to._user.id;
+    send('here', to, data);
+  }
+});
+
+// TODO: lock down naming a bit here
+on('rename', function(connection, data) {
+  if (!data.name) return;
+
+  var name = data.name.slice(0,20);
+  connection._user.name = name;
+  send('rename', connection, {name: name});
 });
 
 on('chat', function(connection, data) {
   if (live.chat != "true") return;
 
-  manager.isBanned(data.id, function(answer) {
+  var user = connection._user;
+  var time = Date.now();
+
+  manager.isBanned(user.id, function(answer) {
     if (answer)
-      onBannedChat(data.id, data.name, data.country, data.message);
+      onBannedChat(user.id, user.name, user.country, data.message);
     else
-      manager.newChat(data.id, data.time, data.name, data.country, data.message);
+      manager.newChat(user.id, time, user.name, user.country, data.message);
   });
 });
 
@@ -200,8 +220,9 @@ manager.onConfig = function(target, key, value) {
   }
 };
 
-manager.onChat = function(name, country, message) {
+manager.onChat = function(id, name, country, message) {
   broadcast("chat", null, {
+    id: id,
     name: name,
     country: country,
     message: message
