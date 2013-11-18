@@ -79,7 +79,7 @@ User.prototype = {
     },
 
     hello: function(data) {
-      this.me.id = data._user_id;
+      this.me.id = data._user.id;
       this.me.server = data.server;
       // console.log("= Assigned ID: " + this.me.id);
 

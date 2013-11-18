@@ -5,10 +5,10 @@
   m = require('./redis')(id, c.redis, require("./utils").logger(id, c))
 */
 
-var redis = require('redis')
-  , dateFormat = require('dateformat')
-  , os = require('os')
-  , time = require('time')(Date);
+var redis = require('redis'),
+    dateFormat = require('dateformat'),
+    os = require('os'),
+    time = require('time')(Date);
 
 var Manager = function(serverId, config, log) {
   this.serverId = serverId;
@@ -23,6 +23,7 @@ var Manager = function(serverId, config, log) {
   this.log = log;
   this.init();
 };
+
 
 Manager.prototype = {
 
@@ -66,24 +67,24 @@ Manager.prototype = {
   },
 
   // a user has joined, add them to the list and log a bunch of analytics about them
-  addUser: function(user, heartbeat) {
+  addUser: function(connection, user, heartbeat) {
     var self = this;
 
-    var key = [this.serverId, user.id].join(":");
+    var key = [this.serverId, connection._user.id].join(":");
     var value = [
-      user.country, 
-      user.transport, 
-      user.browser, 
+      user.country,
+      user.transport,
+      user.browser,
       user.version,
       user.os,
-      user.time
+      Date.now()
     ].join(":");
 
     this.client.hset("users", key, value, function(err, reply) {
       if (reply == "1")
-        self.rlog(self, err, reply, "adding user: " + user.id, "info");
+        self.rlog(self, err, reply, "adding user: " + connection._user.id, "info");
       else
-        self.rlog(self, err, reply, "keeping user: " + user.id, "debug");
+        self.rlog(self, err, reply, "keeping user: " + connection._user.id, "debug");
     });
 
     if (!heartbeat) {
@@ -97,7 +98,7 @@ Manager.prototype = {
   // a user has left, mark that, and if it was a timeout, warn and log it
   removeUser: function(userId, cause) {
     var self = this;
-    
+
     var key = [this.serverId, userId].join(":");
 
     this.client.hdel("users", key, function(err, reply) {
@@ -126,7 +127,7 @@ Manager.prototype = {
   logReconnect: function(user) {
     var self = this;
     var now = new Date();
-    
+
     var date = dateFormat(now.getTime(), "mmdd");
 
     var minutes = now.getMinutes();
@@ -184,7 +185,7 @@ Manager.prototype = {
         self.client.incr(prefix + key);
       })
     });
-    
+
   },
 
   // store records of timeouts, though we don't have user-specific info here

@@ -5,14 +5,17 @@ function noop() {};
 var connections = {};
 
 var welcome = function(connection) {
-  connection._user_id = utils.generateId();
-  connections[connection._user_id] = connection;
+  connection._user = {
+    id: utils.generateId(),
+    name: utils.randomName()
+    // country gets filled in on arrive
+  }
+  connections[connection._user.id] = connection;
 
   send("hello", connection, {
-    _user_id: connection._user_id,
+    user: connection._user,
     server: serverId,
-    live: live,
-    name: utils.randomName()
+    live: live
   });
 
   connection.on('data', function(message) {
@@ -28,7 +31,7 @@ var welcome = function(connection) {
   });
 
   connection.on('close', function() {
-    userLeft(connection._user_id, (connection._timed_out ? "timed out" : "departing"));
+    userLeft(connection._user.id, (connection._timed_out ? "timed out" : "departing"));
   });
 };
 
@@ -39,7 +42,9 @@ var send = function(event, connection, object) {
     connection.write(JSON.stringify(object));
 }
 
-// broadcast a single message to be serialized
+// broadcast a single message to be serialized.
+//   currently: used only by admin and chat commands.
+//   so: recipients do not need to know the sender 'id'.
 var broadcast = function(event, from, object) {
   object._event = event;
   var serialized = JSON.stringify(object);
@@ -50,8 +55,10 @@ var broadcast = function(event, from, object) {
 }
 
 // even thinner layer, just shuttle the original message to others
+//   currently: used to send sender-specific events.
+//   so: the 'id' field needs to have been set by the sending client.
 var rebroadcast = function(connection, data, original) {
-  var from = connection._user_id;
+  var from = connection._user.id;
   for (id in connections) {
     if (id != from)
       connections[id].write(original);
@@ -85,14 +92,15 @@ on('click', rebroadcast);
 
 on('arrive', function(connection, data, original) {
   rebroadcast(connection, data, original);
-  manager.addUser(data);
-  setUserHeartbeat(data.id);
+
+  manager.addUser(connection, data, false); // new user
+  setUserHeartbeat(connection._user.id);
 });
 
 on('heartbeat', function(connection, data) {
   send('heartbeat', connections[data.id], data);
-  manager.addUser(data, true); // update user
-  setUserHeartbeat(data.id);
+  manager.addUser(connection, data, true); // update user
+  setUserHeartbeat(connection._user.id);
 });
 
 on('here', function(connection, data) {
@@ -128,25 +136,24 @@ var dashboard = function(req, res) {
 };
 
 
-var express = require('express')
-  , http = require('http')
-  , sockjs = require('sockjs')
-  , dateFormat = require('dateformat');
+var express = require('express'),
+    http = require('http'),
+    sockjs = require('sockjs'),
+    dateFormat = require('dateformat');
 
-// server environment
-var env = (process.env.NODE_ENV || "development")
-  , config = require('./config')[env]
-  , live = (config.live || {})
-  , port = parseInt(process.env.PORT || config.port || 80);
+var env = (process.env.NODE_ENV || "development"),
+    config = require('./config')[env],
+    live = (config.live || {}),
+    port = parseInt(process.env.PORT || config.port || 80);
 
-var utils = require("./utils")
-  , serverId = (env == "admin" ? "admin" : utils.generateId(6))
-  , log = utils.logger(serverId, config)
-  , manager = require("./redis")(serverId, config.redis, log);
+var utils = require("./utils"),
+    serverId = (env == "admin" ? "admin" : utils.generateId(6)),
+    log = utils.logger(serverId, config),
+    manager = require("./redis")(serverId, config.redis, log);
 
-// basic HTTP server
-var app = express()
-  , server = http.createServer(app);
+var app = express(),
+    server = http.createServer(app);
+
 
 // start everything
 
@@ -154,7 +161,9 @@ var sockets = sockjs.createServer({log: log});
 sockets.installHandlers(server, {prefix: '/christmas'});
 
 app.get('/', function(req, res) {res.send("Up!");});
-app.get('/dashboard', dashboard);
+
+// if (env == "admin")
+  app.get('/dashboard', dashboard);
 
 app.configure(function() {
   app.enable('trust proxy');
@@ -172,9 +181,10 @@ manager.clearUsers();
 manager.logNewServer();
 
 
-/***********
+
+/****************************
  handling pub/sub events
-************/
+*****************************/
 
 // target is 'client' or 'server'
 manager.onConfig = function(target, key, value) {
