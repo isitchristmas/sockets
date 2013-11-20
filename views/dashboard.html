@@ -15,7 +15,7 @@
 <body>
 
 <% if (servers == null) { %>
-  
+
   <h2>Error connecting to Redis.</h2>
 
 <% } else { %>
@@ -30,7 +30,7 @@
   <h1><%= serverCount %> Drones, <%= userCount %> Active Users</h1>
 
   <% if (servers.length == 0) { %>
-    
+
     <h2>No users right now.</h2>
 
   <% } else { %>
@@ -54,8 +54,8 @@
 
     <% for(server in servers) { %>
       <td>
-      
-      [<%= server %>]
+
+      [<%= server.slice(0,6) %>]
       (<%= servers[server].length %>)
 
       <% var stats = system[server]; %>

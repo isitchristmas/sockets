@@ -14,7 +14,7 @@ var welcome = function(connection) {
 
   send("hello", connection, {
     user: connection._user,
-    server: serverId,
+    server: serverId.slice(0,6),
     live: live
   });
 
@@ -168,9 +168,10 @@ var config = utils.config(env),
     live = (config.live || {}),
     port = parseInt(process.env.PORT || config.port || 80);
 
-var serverId = (env == "admin" ? "admin" : utils.generateId(6)),
+// full server ID is 12 chars long, only first 6 shared with client
+var serverId = (env == "admin" ? "admin" : utils.generateId(12)),
     log = utils.logger(serverId, config),
-    manager = require("./redis")(serverId, config.redis, log);
+    manager = require("./manager")(serverId, config.redis, log);
 
 var app = express(),
     server = http.createServer(app);

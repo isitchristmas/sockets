@@ -16,7 +16,6 @@ var Manager = function(serverId, config, log) {
   this.password = config.password;
   this.host = config.host;
   this.port = config.port;
-  this.default_live = config.default_live;
 
   this.onConfig = this.onCommand = this.onChat = function() {};
 
@@ -146,7 +145,6 @@ Manager.prototype = {
   logVisit: function(user) {
     var self = this;
     var date = dateFormat(Date.now(), "mmdd");
-    var key = [this.serverId, user.id].join(":");
 
     // accumulate counters of various combos
     // accumulate both for all-time, and for the date (mmdd:*)
