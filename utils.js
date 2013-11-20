@@ -73,9 +73,6 @@ module.exports = {
   // otherwise, if config.js is present, loads and
   //   returns it with the requested env.
   config: function(env) {
-    console.log("deployment: " + process.env.DEPLOYMENT);
-    console.log("okay: " + JSON.stringify(process.env));
-
     if (process.env.DEPLOYMENT == "env") {
       return {
         log: parseInt(process.env.LOG_LEVEL, 10),

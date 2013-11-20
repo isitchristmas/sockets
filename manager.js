@@ -1,7 +1,7 @@
 // test this in REPL with:
 /*
   id = require("./utils").generateId();
-  c = require("./config").development;
+  c = require("./utils").config('development');
   m = require('./manager')(id, c.manager, require("./utils").logger(id, c))
 */
 
