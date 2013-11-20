@@ -161,13 +161,14 @@ var express = require('express'),
     sockjs = require('sockjs'),
     dateFormat = require('dateformat');
 
-var env = (process.env.NODE_ENV || "development"),
-    config = require('./config')[env],
+var utils = require("./utils"),
+    env = (process.env.NODE_ENV || "development");
+
+var config = utils.config(env),
     live = (config.live || {}),
     port = parseInt(process.env.PORT || config.port || 80);
 
-var utils = require("./utils"),
-    serverId = (env == "admin" ? "admin" : utils.generateId(6)),
+var serverId = (env == "admin" ? "admin" : utils.generateId(6)),
     log = utils.logger(serverId, config),
     manager = require("./redis")(serverId, config.redis, log);
 

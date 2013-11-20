@@ -66,5 +66,31 @@ module.exports = {
 
   randomName: function() {
     return names[Math.floor(Math.random() * names.length)];
+  },
+
+  // if DEPLOYMENT=heroku, use environment variables to populate
+  //   a config.js replacement, then return it.
+  // otherwise, if config.js is present, loads and
+  //   returns it with the requested env.
+  config: function(env) {
+    if (process.env.DEPLOYMENT == "env") {
+      return {
+        log: parseInt(process.env.LOG_LEVEL, 10),
+        redis: {
+          port: parseInt(process.env.REDIS_PORT, 10),
+          host: process.env.REDIS_HOST,
+          password: process.env.REDIS_PASSWORD
+        },
+        live: {
+          chat: process.env.LIVE_CHAT,
+          death_interval: parseInt(process.env.LIVE_DEATH_INTERVAL, 10),
+          heartbeat_interval: parseInt(process.env.LIVE_HEARTBEAT_INTERVAL, 10),
+          ghost_max: parseInt(process.env.LIVE_GHOST_MAX, 10),
+          ghost_duration: parseInt(process.env.LIVE_GHOST_DURATION, 10)
+        },
+        logentries: process.env.LOGENTRIES
+      };
+    } else
+      return require('./config')[env];
   }
 };
