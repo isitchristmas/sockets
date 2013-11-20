@@ -2,7 +2,7 @@
 /*
   id = require("./utils").generateId();
   c = require("./config").development;
-  m = require('./redis')(id, c.redis, require("./utils").logger(id, c))
+  m = require('./manager')(id, c.manager, require("./utils").logger(id, c))
 */
 
 var redis = require('redis'),
@@ -217,13 +217,13 @@ Manager.prototype = {
 
     ["error", "end", "connect", "ready"].forEach(function(message) {
       client.on(message, function () {
-        log.warn("[redis] client: " + message);
+        log.warn("[manager] client: " + message);
       });
     });
 
     ["error", "end", "connect"].forEach(function(message) {
       sub.on(message, function () {
-        log.warn("[redis] sub: " + message);
+        log.warn("[manager] sub: " + message);
       });
     });
 
@@ -255,15 +255,15 @@ Manager.prototype = {
 
     sub.on('subscribe', function(channel, count) {
       var severity = (channel == "heartbeat") ? "debug" : "warn";
-      log(severity, "[redis] subscribed to " + channel + " [" + count + "]");
+      log(severity, "[manager] subscribed to " + channel + " [" + count + "]");
     });
 
     sub.on('unsubscribe', function(channel, count) {
-      log.warn("[redis] unsubscribed from " + channel + "[" + count + "]");
+      log.warn("[manager] unsubscribed from " + channel + "[" + count + "]");
     });
 
     sub.on('ready', function() {
-      log.warn("[redis] sub: ready");
+      log.warn("[manager] sub: ready");
       sub.subscribe("client");
       sub.subscribe("server");
       sub.subscribe("command");
@@ -366,15 +366,15 @@ Manager.prototype = {
   rlog: function(self, err, reply, message, severity) {
     if (!severity) severity = "info";
     if (err)
-      self.log.error("[redis] ERROR " + message + "(" + err + ")");
+      self.log.error("[manager] ERROR " + message + "(" + err + ")");
     else
-      self.log[severity]("[redis] " + message + " (" + reply + ")");
+      self.log[severity]("[manager] " + message + " (" + reply + ")");
   },
 
   // not used right now, could be to diagnose a problem
   rror: function(err, reply) {
     if (err)
-      console.log("[redis] ERROR UNEXPECTED: " + err);
+      console.log("[manager] ERROR UNEXPECTED: " + err);
   }
 }
 

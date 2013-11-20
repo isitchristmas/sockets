@@ -1,6 +1,7 @@
 // copy this file to config.js, and change the values below to real ones
 
-// redis - redis login details (required)
+// manager - redis login details (required)
+// live - default values for live config values (required)
 // logentries: token for logentries.com account (optional)
 
 module.exports = {
@@ -9,7 +10,7 @@ module.exports = {
     port: 3000,
     log: 1, // 1: error/warn, 2: info, 3: debug
 
-    redis: {
+    manager: {
       port: 6379,
       host: "localhost",
       password: null
@@ -32,7 +33,7 @@ module.exports = {
     port: 3000,
     log: 1, // 1: error/warn, 2: info, 3: debug
 
-    redis: {
+    manager: {
       port: 6379,
       host: "localhost",
       password: null

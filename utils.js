@@ -79,10 +79,10 @@ module.exports = {
     if (process.env.DEPLOYMENT == "env") {
       return {
         log: parseInt(process.env.LOG_LEVEL, 10),
-        redis: {
-          port: parseInt(process.env.REDIS_PORT, 10),
-          host: process.env.REDIS_HOST,
-          password: process.env.REDIS_PASSWORD
+        manager: {
+          port: parseInt(process.env.MANAGER_PORT, 10),
+          host: process.env.MANAGER_HOST,
+          password: process.env.MANAGER_PASSWORD
         },
         live: {
           chat: process.env.LIVE_CHAT,

@@ -171,7 +171,7 @@ var config = utils.config(env),
 // full server ID is 12 chars long, only first 6 shared with client
 var serverId = (env == "admin" ? "admin" : utils.generateId(12)),
     log = utils.logger(serverId, config),
-    manager = require("./manager")(serverId, config.redis, log);
+    manager = require("./manager")(serverId, config.manager, log);
 
 var app = express(),
     server = http.createServer(app);
