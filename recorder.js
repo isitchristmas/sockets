@@ -14,7 +14,7 @@ var Recorder = function(serverId, config, log) {
   this.host = config.host;
   this.port = config.port;
 
-  // default to 'on'
+  // default to 'on' - this is important for the admin app
   this.on = true;
 
   // will be the main redis client
