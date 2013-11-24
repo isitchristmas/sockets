@@ -177,7 +177,14 @@ var sockets = sockjs.createServer({log: log});
 sockets.installHandlers(server, {prefix: '/christmas'});
 
 app.get('/', function(req, res) {res.send("Up!");});
-
+// currently used by iOS app to see the flags in a random room
+app.get('/flags', function(req, res) {
+  res.set({'Content-Type': 'application/json'});
+  if (recorder.on)
+    recorder.getSnapshot(function(snapshot) {res.send(snapshot || "[]")});
+  else
+    res.send("[]");
+});
 
 // this can be used as a separate admin app
 if (admin)

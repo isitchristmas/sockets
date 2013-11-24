@@ -58,6 +58,19 @@ Recorder.prototype = {
     }
   },
 
+  // get the frozen JSON string of the current snapshot
+  getSnapshot: function(callback) {
+    var self = this;
+    this.client.hget("current_snapshot", this.serverId, function(err, reply) {
+      if (err) {
+        self.rlog(self, err, reply, "getting users");
+        return callback(null);
+      }
+
+      return callback(reply);
+    });
+  },
+
   // gets kicked off every 5s -- asks all clients to report their current x/y.
   // maintains a 1s window to receive answers from everyone.
   // then when it's done, publishes to a channel.
