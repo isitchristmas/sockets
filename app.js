@@ -139,10 +139,12 @@ on('chat', function(connection, data) {
   var time = Date.now();
 
   manager.isBanned(user.id, function(answer) {
-    if (answer || utils.rejectText(data.message))
+    if (answer || (data.message == connection._user.lastMessage) || utils.rejectText(data.message))
       onBannedChat(user.id, user.name, user.country, data.message);
     else
       manager.newChat(user.id, time, user.name, user.country, data.message);
+
+    connection._user.lastMessage = data.message;
   });
 });
 
