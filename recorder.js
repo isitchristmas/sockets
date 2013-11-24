@@ -61,6 +61,12 @@ Recorder.prototype = {
   // get the frozen JSON string of the current snapshot
   getSnapshot: function(callback, serverId) {
     var self = this;
+
+    if (!this.on) {
+      if (serverId) return "[]";
+      else return "{}";
+    }
+
     this.client.hgetall("current_snapshot", function(err, reply) {
       if (err) {
         self.rlog(self, err, reply, "getting users");

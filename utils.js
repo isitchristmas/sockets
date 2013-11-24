@@ -81,6 +81,7 @@ module.exports = {
     if (process.env.DEPLOYMENT == "env") {
       return {
         log: parseInt(process.env.LOG_LEVEL, 10),
+        admin: process.env.ADMIN_PASSWORD,
         manager: {
           port: parseInt(process.env.MANAGER_PORT, 10),
           host: process.env.MANAGER_HOST,

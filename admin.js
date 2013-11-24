@@ -22,5 +22,15 @@ module.exports = function(app, config, manager, recorder) {
     });
   };
 
+  var snapshot = function(req, res) {
+    var password = req.param("admin");
+    if (config.admin && (password != config.admin))
+      return (res.status(403).send("What?"));
+
+    res.set({'Content-Type': 'application/json'});
+    recorder.getSnapshot(function(snapshot) {res.send(snapshot || "{}")});
+  };
+
+  app.get('/snapshot', snapshot);
   app.get('/dashboard', dashboard);
 }
