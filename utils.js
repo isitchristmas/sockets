@@ -96,6 +96,6 @@ module.exports = {
         logentries: process.env.LOGENTRIES
       };
     } else
-      return require('./config')[env];
+      return require('./config')[env] || require("./config").production;
   }
 };

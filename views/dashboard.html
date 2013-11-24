@@ -43,7 +43,6 @@
       <% if (stats) { %>
         [<%= [stats.loadavg0, stats.loadavg1, stats.loadavg2].join(", ") %>] (<%= stats.rss %>M)
       <% } %>
-      <%= server == serverId ? "*" : "" %>
       <br/>
     <% } %>
 
@@ -62,7 +61,6 @@
       <% if (stats) { %>
         [<%= [stats.loadavg0, stats.loadavg1, stats.loadavg2].join(", ") %>] (<%= stats.rss %>M)
       <% } %>
-      <%= server == serverId ? "*" : "" %>
 
       <% for (i in servers[server]) { %>
         <% var user = servers[server][i]; %>

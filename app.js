@@ -43,7 +43,7 @@ var send = function(event, connection, object) {
 }
 
 // broadcast a single message to be serialized.
-//   currently: used only by admin and chat commands.
+//   currently: used only by config changes and chat commands.
 //   so: recipients do not need to know the sender 'id'.
 var broadcast = function(event, from, object) {
   object._event = event;
@@ -144,26 +144,9 @@ on('chat', function(connection, data) {
 });
 
 
-// admin area
-var dashboard = function(req, res) {
-  manager.allUsers(function(servers) {
-    manager.getSystem(function(system) {
-      res.render("dashboard", {
-        serverId: serverId,
-        servers: servers,
-        system: system,
-        dateFormat: dateFormat,
-        req: req
-      });
-    });
-  });
-};
-
-
 var express = require('express'),
     http = require('http'),
-    sockjs = require('sockjs'),
-    dateFormat = require('dateformat');
+    sockjs = require('sockjs');
 
 var utils = require("./utils"),
     env = (process.env.NODE_ENV || "development");
@@ -194,9 +177,17 @@ sockets.installHandlers(server, {prefix: '/christmas'});
 
 app.get('/', function(req, res) {res.send("Up!");});
 
-// if (env == "admin")
-  app.get('/dashboard', dashboard);
+// this can be used as a separate admin app
+if (env == "admin")
+  admin = require('./admin')(app, config, manager);
+else {
+  // wipe the users clean on process start, the live ones will heartbeat in
+  manager.clearUsers();
+  manager.logNewServer();
+  if (recorder.on) recorder.clearSnapshot();
+}
 
+// start up express server
 app.configure(function() {
   app.enable('trust proxy');
   app.engine('.html', require('ejs').__express);
@@ -206,12 +197,6 @@ app.configure(function() {
   });
 });
 
-
-// wipe the users clean on process start, the live ones will heartbeat in
-
-manager.clearUsers();
-manager.logNewServer();
-if (recorder.on) recorder.clearSnapshot();
 
 
 
