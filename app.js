@@ -123,9 +123,12 @@ on('pong', function(connection, data) {
 // TODO: lock down naming a bit here
 on('rename', function(connection, data) {
   if (!data.name) return;
-
   var name = data.name.slice(0,20);
-  connection._user.name = name;
+
+  // still send down the name message even if it got rejected
+  if (!utils.rejectText(data.name))
+    connection._user.name = name;
+
   send('rename', connection, {name: name});
 });
 
@@ -136,7 +139,7 @@ on('chat', function(connection, data) {
   var time = Date.now();
 
   manager.isBanned(user.id, function(answer) {
-    if (answer)
+    if (answer || utils.rejectText(data.message))
       onBannedChat(user.id, user.name, user.country, data.message);
     else
       manager.newChat(user.id, time, user.name, user.country, data.message);
@@ -237,6 +240,7 @@ var onBannedChat = function(id, name, country, message) {
   log.warn("[banned] [" + id + "] [" + country + "] " + name + ": " + message);
   if (connections[id]) {
     send("chat", connections[id], {
+      id: id,
       name: name,
       country: country,
       message: message

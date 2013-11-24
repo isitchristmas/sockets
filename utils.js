@@ -1,5 +1,6 @@
 var crypto = require('crypto');
 var names = require('./names');
+var badwords = require('badwords/regexp');
 
 var severities = {error: 1, warn: 1, info: 2, debug: 3};
 
@@ -66,6 +67,10 @@ module.exports = {
 
   randomName: function() {
     return names[Math.floor(Math.random() * names.length)];
+  },
+
+  rejectText: function(text) {
+    return badwords.test(text);
   },
 
   // if DEPLOYMENT=heroku, use environment variables to populate

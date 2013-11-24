@@ -21,7 +21,8 @@
     "winston": "*",
     "ejs": "*",
     "dateformat": "*",
-    "time": "*"
+    "time": "*",
+    "badwords": "*"
   },
 
   "bundledDependencies": [
