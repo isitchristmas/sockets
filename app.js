@@ -181,7 +181,7 @@ app.get('/', function(req, res) {res.send("Up!");});
 app.get('/flags', function(req, res) {
   res.set({'Content-Type': 'application/json'});
   if (recorder.on)
-    recorder.getSnapshot(function(snapshot) {res.send(snapshot || "[]")});
+    recorder.getSnapshot(function(snapshot) {res.send(snapshot || "[]")}, serverId);
   else
     res.send("[]");
 });

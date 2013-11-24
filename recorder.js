@@ -59,15 +59,20 @@ Recorder.prototype = {
   },
 
   // get the frozen JSON string of the current snapshot
-  getSnapshot: function(callback) {
+  getSnapshot: function(callback, serverId) {
     var self = this;
-    this.client.hget("current_snapshot", this.serverId, function(err, reply) {
+    this.client.hgetall("current_snapshot", function(err, reply) {
       if (err) {
         self.rlog(self, err, reply, "getting users");
         return callback(null);
       }
 
-      return callback(reply);
+      // if asking for a single server's worth, return a string
+      if (serverId)
+        return callback((reply || {})[serverId]);
+      // otherwise, the system-wide snapshot
+      else
+        return callback(reply);
     });
   },
 
