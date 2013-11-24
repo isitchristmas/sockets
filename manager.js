@@ -113,8 +113,10 @@ Manager.prototype = {
   // clears ALL users (not just this process').
   // useful to do whenever there's a risk of a server having crashed without
   // clearing its own users, because still-connected users will re-add
-  // themselves through heartbeats without trouble (and their connection time
-  // will stay correct because it gets generated client-side)
+  // themselves through heartbeats without trouble
+  //
+  // NOTE TO SELF: their connection time will not stay correct because
+  // it no longer gets generated client-side.
   clearUsers: function() {
     var self = this;
     this.client.del("users", function(err, reply) {
@@ -290,6 +292,8 @@ Manager.prototype = {
     this.log.warn("[chat] [" + id + "] [" + country + "] " + name + ": " + message);
   },
 
+  // todo sometime: could set this on the connection object itself,
+  // though this would lock it to connection-level banning only.
   isBanned: function(id, callback) {
     this.client.sismember("banned", id, function(err, reply) {
       callback(reply == "1");
@@ -372,6 +376,7 @@ Manager.prototype = {
   },
 
   // not used right now, could be to diagnose a problem
+  // uses console.log to bypass logging mechanism
   rror: function(err, reply) {
     if (err)
       console.log("[manager] ERROR UNEXPECTED: " + err);

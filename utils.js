@@ -81,6 +81,11 @@ module.exports = {
           host: process.env.MANAGER_HOST,
           password: process.env.MANAGER_PASSWORD
         },
+        recorder: {
+          port: parseInt(process.env.RECORDER_PORT, 10),
+          host: process.env.RECORDER_HOST,
+          password: process.env.RECORDER_PASSWORD
+        },
         live: {
           chat: process.env.LIVE_CHAT,
           death_interval: parseInt(process.env.LIVE_DEATH_INTERVAL, 10),

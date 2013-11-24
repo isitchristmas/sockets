@@ -116,6 +116,10 @@ on('here', function(connection, data) {
   }
 });
 
+on('pong', function(connection, data) {
+  if (recorder) recorder.snapshotData(connection, data);
+});
+
 // TODO: lock down naming a bit here
 on('rename', function(connection, data) {
   if (!data.name) return;
@@ -171,7 +175,8 @@ var config = utils.config(env),
 // full server ID is 12 chars long, only first 6 shared with client
 var serverId = (env == "admin" ? "admin" : utils.generateId(12)),
     log = utils.logger(serverId, config),
-    manager = require("./manager")(serverId, config.manager, log);
+    manager = require("./manager")(serverId, config.manager, log),
+    recorder = require("./recorder")(serverId, config.recorder, log);
 
 var app = express(),
     server = http.createServer(app);
@@ -201,6 +206,7 @@ app.configure(function() {
 
 manager.clearUsers();
 manager.logNewServer();
+recorder.clearSnapshot();
 
 
 
@@ -241,7 +247,7 @@ var onBannedChat = function(id, name, country, message) {
       message: message
     });
   }
-}
+};
 
 manager.onCommand = function(command, args) {
   log.warn("live command: " + command + " (" + args.join(", ") + ")");
@@ -249,7 +255,13 @@ manager.onCommand = function(command, args) {
     command: command,
     arguments: args
   });
-}
+};
+
+// kick off a client snapshot request to all connected clients
+recorder.onClientSnapshot = function() {
+  broadcast("ping", null, {});
+};
+
 
 // get current starting configuration and wait for users
 manager.loadConfig(function(initLive, err) {
