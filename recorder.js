@@ -14,6 +14,9 @@ var Recorder = function(serverId, config, log) {
   this.host = config.host;
   this.port = config.port;
 
+  // default to 'on'
+  this.on = true;
+
   // will be the main redis client
   this.client = null;
 
@@ -100,8 +103,6 @@ Recorder.prototype = {
       sub.auth(this.password);
     }
 
-    this.startSnapshotting();
-
     sub.on('subscribe', function(channel, count) {
       var severity = (channel == "heartbeat") ? "debug" : "warn";
       self.log(severity, "[recorder] subscribed to " + channel + " [" + count + "]");
@@ -124,7 +125,13 @@ Recorder.prototype = {
     this.sub = sub;
   },
 
-  shutdown: function() {
+  turnOn: function() {
+    this.on = true;
+    this.startSnapshotting();
+  },
+
+  turnOff: function() {
+    this.on = false;
     this.stopSnapshotting();
   },
 

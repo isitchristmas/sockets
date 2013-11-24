@@ -117,7 +117,7 @@ on('here', function(connection, data) {
 });
 
 on('pong', function(connection, data) {
-  if (recorder) recorder.snapshotData(connection, data);
+  if (recorder.on) recorder.snapshotData(connection, data);
 });
 
 // TODO: lock down naming a bit here
@@ -175,8 +175,13 @@ var config = utils.config(env),
 // full server ID is 12 chars long, only first 6 shared with client
 var serverId = (env == "admin" ? "admin" : utils.generateId(12)),
     log = utils.logger(serverId, config),
-    manager = require("./manager")(serverId, config.manager, log),
-    recorder = require("./recorder")(serverId, config.recorder, log);
+    manager = require("./manager")(serverId, config.manager, log);
+
+
+// recorder may be turned off and on
+var recorder = require("./recorder")(serverId, config.recorder, log);
+if (live.recorder == "on") recorder.turnOn();
+
 
 var app = express(),
     server = http.createServer(app);
@@ -206,7 +211,7 @@ app.configure(function() {
 
 manager.clearUsers();
 manager.logNewServer();
-recorder.clearSnapshot();
+if (recorder.on) recorder.clearSnapshot();
 
 
 
@@ -225,6 +230,11 @@ manager.onConfig = function(target, key, value) {
       key: key,
       value: value
     });
+  } else if (target == "server") {
+    if (key == "recorder") {
+      recorder.turnOff();
+      if (value == "on") recorder.turnOn();
+    }
   }
 };
 
