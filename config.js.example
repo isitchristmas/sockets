@@ -16,6 +16,12 @@ module.exports = {
       password: null
     },
 
+    recorder: {
+      port: 6379,
+      host: "localhost",
+      password: null
+    },
+
     // will be overridden by values in redis
     live: {
       chat: "true",
@@ -26,6 +32,10 @@ module.exports = {
       ghost_max: 10
     },
 
+    // set to something to force an admin password
+    admin: null,
+
+    // set to a logentries API token to send logs there
     logentries: null
   },
 
@@ -34,6 +44,12 @@ module.exports = {
     log: 1, // 1: error/warn, 2: info, 3: debug
 
     manager: {
+      port: 6379,
+      host: "localhost",
+      password: null
+    },
+
+    recorder: {
       port: 6379,
       host: "localhost",
       password: null
@@ -49,6 +65,10 @@ module.exports = {
       ghost_max: 10
     },
 
+    // set to something to force an admin password
+    admin: "password",
+
+    // set to a logentries API token to send logs there
     logentries: null
   }
 }

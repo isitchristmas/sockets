@@ -6,6 +6,10 @@ var dateFormat = require('dateformat');
 module.exports = function(app, config, manager, recorder) {
 
   var dashboard = function(req, res) {
+    var password = req.param("admin");
+    if (config.admin && (password != config.admin))
+      return (res.status(403).send("What?"));
+
     manager.allUsers(function(servers) {
       manager.getSystem(function(system) {
         res.render("dashboard", {
