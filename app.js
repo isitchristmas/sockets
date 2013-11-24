@@ -149,14 +149,15 @@ var express = require('express'),
     sockjs = require('sockjs');
 
 var utils = require("./utils"),
-    env = (process.env.NODE_ENV || "development");
+    env = (process.env.NODE_ENV || "development"),
+    admin = (process.env.IIC_ADMIN == "true");
 
 var config = utils.config(env),
     live = (config.live || {}),
     port = parseInt(process.env.PORT || config.port || 80);
 
 // full server ID is 12 chars long, only first 6 shared with client
-var serverId = (env == "admin" ? "admin" : utils.generateId(12)),
+var serverId = (admin ? "admin" : utils.generateId(12)),
     log = utils.logger(serverId, config),
     manager = require("./manager")(serverId, config.manager, log),
     recorder = require("./recorder")(serverId, config.recorder, log);
@@ -174,8 +175,8 @@ app.get('/', function(req, res) {res.send("Up!");});
 
 
 // this can be used as a separate admin app
-if (env == "admin")
-  admin = require('./admin')(app, config, manager);
+if (admin)
+  require('./admin')(app, config, manager, recorder);
 else {
   // recorder may be turned off and on
   if (live.recorder == "on") recorder.turnOn();

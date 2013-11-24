@@ -3,7 +3,7 @@
 
 var dateFormat = require('dateformat');
 
-module.exports = function(app, config, manager) {
+module.exports = function(app, config, manager, recorder) {
 
   var dashboard = function(req, res) {
     manager.allUsers(function(servers) {
