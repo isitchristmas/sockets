@@ -197,6 +197,13 @@ else {
   if (recorder.on) recorder.clearSnapshot();
 }
 
+// turn on CORS
+app.all('*', function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "X-Requested-With");
+  next();
+});
+
 // start up express server
 app.configure(function() {
   app.enable('trust proxy');
@@ -206,8 +213,6 @@ app.configure(function() {
     log.warn("Express " + app.settings.env + " server listening on port " + port);
   });
 });
-
-
 
 
 /****************************

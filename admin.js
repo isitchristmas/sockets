@@ -31,13 +31,6 @@ module.exports = function(app, config, manager, recorder) {
     recorder.getSnapshot(function(snapshot) {res.send(snapshot || "{}")});
   };
 
-  // turn on CORS
-  app.all('*', function(req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "X-Requested-With");
-    next();
-  });
-
   app.get('/snapshot', snapshot);
   app.get('/dashboard', dashboard);
 }
