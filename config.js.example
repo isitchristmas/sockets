@@ -10,6 +10,9 @@ module.exports = {
     port: 3000,
     log: 1, // 1: error/warn, 2: info, 3: debug
 
+    // guards dashboard and full snapshot data
+    admin: "admin",
+
     manager: {
       port: 6379,
       host: "localhost",
@@ -32,9 +35,6 @@ module.exports = {
       ghost_max: 10
     },
 
-    // set to something to force an admin password
-    admin: null,
-
     // set to a logentries API token to send logs there
     logentries: null
   },
@@ -42,6 +42,9 @@ module.exports = {
   production: {
     port: 3000,
     log: 1, // 1: error/warn, 2: info, 3: debug
+
+    // change this in production
+    admin: "admin",
 
     manager: {
       port: 6379,
@@ -64,9 +67,6 @@ module.exports = {
       ghost_duration: 2000,
       ghost_max: 10
     },
-
-    // set to something to force an admin password
-    admin: "password",
 
     // set to a logentries API token to send logs there
     logentries: null
