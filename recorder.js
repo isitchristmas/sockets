@@ -145,6 +145,7 @@ Recorder.prototype = {
 
   turnOff: function() {
     this.on = false;
+    this.clearSnapshot();
     this.stopSnapshotting();
   },
 
