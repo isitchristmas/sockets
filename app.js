@@ -158,29 +158,28 @@ var config = utils.config(env),
 // full server ID is 12 chars long, only first 6 shared with client
 var serverId = (env == "admin" ? "admin" : utils.generateId(12)),
     log = utils.logger(serverId, config),
-    manager = require("./manager")(serverId, config.manager, log);
-
-
-// recorder may be turned off and on
-var recorder = require("./recorder")(serverId, config.recorder, log);
-if (live.recorder == "on") recorder.turnOn();
-
-
-var app = express(),
-    server = http.createServer(app);
+    manager = require("./manager")(serverId, config.manager, log),
+    recorder = require("./recorder")(serverId, config.recorder, log);
 
 
 // start everything
+
+var app = express(),
+    server = http.createServer(app);
 
 var sockets = sockjs.createServer({log: log});
 sockets.installHandlers(server, {prefix: '/christmas'});
 
 app.get('/', function(req, res) {res.send("Up!");});
 
+
 // this can be used as a separate admin app
 if (env == "admin")
   admin = require('./admin')(app, config, manager);
 else {
+  // recorder may be turned off and on
+  if (live.recorder == "on") recorder.turnOn();
+
   // wipe the users clean on process start, the live ones will heartbeat in
   manager.clearUsers();
   manager.logNewServer();
