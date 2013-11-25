@@ -3,6 +3,10 @@
   id = require("./utils").generateId();
   c = require("./utils").config('development');
   m = require('./manager')(id, c.manager, require("./utils").logger(id, c))
+
+  r = require('redis');
+  c = require("./utils").config('production');
+  client = r.createClient(c.manager.port, c.manager.host); client.auth(c.manager.password, function(reply) {console.log(util.inspect(reply))});
 */
 
 var redis = require('redis'),
@@ -218,14 +222,14 @@ Manager.prototype = {
       , self = this;
 
     ["error", "end", "connect", "ready"].forEach(function(message) {
-      client.on(message, function () {
-        log.warn("[manager] client: " + message);
+      client.on(message, function (content) {
+        log.warn("[manager] client: " + message + ", " + content);
       });
     });
 
     ["error", "end", "connect"].forEach(function(message) {
-      sub.on(message, function () {
-        log.warn("[manager] sub: " + message);
+      sub.on(message, function (content) {
+        log.warn("[manager] sub: " + message + ", " + content);
       });
     });
 
@@ -348,7 +352,6 @@ Manager.prototype = {
   loadConfig: function(callback) {
     var self = this;
     this.client.hgetall("live", function(err, reply) {
-      console.log("done loading...!?");
       if (err) {
         self.rlog(self, err, reply, "Error fetching live config");
         callback(null, err);
