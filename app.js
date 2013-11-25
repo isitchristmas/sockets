@@ -167,6 +167,8 @@ var serverId = (admin ? "admin" : utils.generateId(12)),
     manager = require("./manager")(serverId, config.manager, log),
     recorder = require("./recorder")(serverId, config.recorder, log);
 
+log.warn(config.manager);
+log.warn(manager);
 
 // start everything
 
