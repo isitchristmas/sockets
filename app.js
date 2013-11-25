@@ -153,6 +153,7 @@ var express = require('express'),
     http = require('http'),
     sockjs = require('sockjs');
 
+var util = require('util');
 var utils = require("./utils"),
     env = (process.env.NODE_ENV || "development"),
     admin = (process.env.IIC_ADMIN == "true");
@@ -167,9 +168,7 @@ var serverId = (admin ? "admin" : utils.generateId(12)),
     manager = require("./manager")(serverId, config.manager, log),
     recorder = require("./recorder")(serverId, config.recorder, log);
 
-var util = require('util');
-log.warn(util.inspect(config.manager));
-log.warn(util.inspect(manager));
+
 
 // start everything
 

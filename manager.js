@@ -355,6 +355,7 @@ Manager.prototype = {
 
       callback(reply || {});
     });
+    console.log("done loading...?");
   },
 
   // will be updated on publish events to client/server config
