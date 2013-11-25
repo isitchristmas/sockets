@@ -275,6 +275,7 @@ recorder.onClientSnapshot = function() {
 
 
 // get current starting configuration and wait for users
+log.info("Loading config from manager and beginning.");
 manager.loadConfig(function(initLive, err) {
   if (err) {
     log.error("Couldn't load live config! Crashing myself")
