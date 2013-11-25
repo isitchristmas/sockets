@@ -348,6 +348,7 @@ Manager.prototype = {
   loadConfig: function(callback) {
     var self = this;
     this.client.hgetall("live", function(err, reply) {
+      console.log("done loading...!?");
       if (err) {
         self.rlog(self, err, reply, "Error fetching live config");
         callback(null, err);
@@ -355,7 +356,6 @@ Manager.prototype = {
 
       callback(reply || {});
     });
-    console.log("done loading...?");
   },
 
   // will be updated on publish events to client/server config
