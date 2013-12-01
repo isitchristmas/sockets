@@ -179,12 +179,6 @@ var sockets = sockjs.createServer({log: log});
 sockets.installHandlers(server, {prefix: '/christmas'});
 
 app.get('/', function(req, res) {res.send("Up!");});
-// currently used by iOS app to see the flags in a random room
-app.get('/flags', function(req, res) {
-  res.set({'Content-Type': 'application/json'});
-  recorder.getSnapshot(function(snapshot) {res.send(snapshot || "[]")}, serverId);
-});
-
 
 // this can be used as a separate admin app
 if (admin)
@@ -277,7 +271,7 @@ recorder.onClientSnapshot = function() {
 
 
 // get current starting configuration and wait for users
-log.info("Loading config from manager and beginning.");
+log.info("Loading config from manager, and beginning.");
 manager.loadConfig(function(initLive, err) {
   if (err) {
     log.error("Couldn't load live config! Crashing myself")
