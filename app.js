@@ -185,12 +185,12 @@ if (admin)
   require('./admin')(app, config, manager, recorder);
 else {
   // recorder may be turned off and on
-  if (live.recorder == "on") recorder.turnOn();
+  (live.recorder == "on") ? recorder.turnOn() : recorder.turnOff();
+  if (recorder.on) recorder.clearSnapshot();
 
   // wipe the users clean on process start, the live ones will heartbeat in
   manager.clearUsers();
   manager.logNewServer();
-  if (recorder.on) recorder.clearSnapshot();
 }
 
 // turn on CORS

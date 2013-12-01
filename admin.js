@@ -1,5 +1,4 @@
-// admin area, only available when NODE_ENV=admin
-// todo: make available only behind a password?
+// admin area, only available when IIC_ADMIN=true
 
 var dateFormat = require('dateformat');
 
