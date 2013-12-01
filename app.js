@@ -4,6 +4,56 @@ function noop() {};
 
 var connections = {};
 
+// admin-only
+var Nsa = {
+
+  // connections, keyed by serverId
+  taps: {},
+
+  // when recording is turned on, all sub'd messages go through here
+  openTaps: function() {
+    recorder.onTappedMessage = function(serverId, message) {
+      (Nsa.taps[serverId] || []).forEach(function(tap) {
+        tap.write(message);
+      });
+    }
+  },
+
+  welcome: function(connection) {
+    send('identify', connection, {});
+
+    connection.on('data', function(message) {
+      // plain-text identify message initiates connection
+      if (message.slice(0,8) == "identify") {
+        var serverId = message.slice(9);
+        connection.serverId = serverId;
+        log.debug("Eavesdropper asking to tap: " + serverId);
+
+        // TODO: what to do with invalid serverId?
+
+        // store connection locally (absorb one-to-many here)
+        if (!Nsa.taps[serverId]) Nsa.taps[serverId] = [];
+        Nsa.taps[serverId].push(connection);
+
+        // recorder.startTap(serverId, connection);
+
+        // forward the new tap on so that the socket makes a fake connection
+        var tapMessage = JSON.stringify({_event: "tap"});
+        recorder.client.publish(connection.serverId, tapMessage);
+      }
+
+      // send all normal traffic into the tap
+      else {
+        console.log("Tap publishing: " + message);
+        recorder.eavesdropPub.publish(connection.serverId, message);
+      }
+    });
+  }
+
+};
+
+
+
 var welcome = function(connection) {
   connection._user = {
     id: utils.generateId(),
@@ -283,5 +333,5 @@ manager.loadConfig(function(initLive, err) {
 
   log.info("Starting up with live config: " + JSON.stringify(live));
 
-  sockets.on('connection', welcome);
+  sockets.on('connection', admin ? Nsa.welcome : welcome);
 });

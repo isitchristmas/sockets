@@ -32,7 +32,7 @@ module.exports = {
 
   logger: function(serverId, config) {
     // default to error msgs only
-    var log_level = (config.log || process.env.LOG || 1);
+    var log_level = (process.env.LOG || config.log || 1);
 
     var func;
 
