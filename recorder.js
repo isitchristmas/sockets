@@ -20,32 +20,6 @@ var Recorder = function(serverId, config, log) {
   // will be the main redis client
   this.client = null;
 
-
-  // the "tapping" system to join specifically chosen rooms.
-  // **will not operate if recorder is 'off'.**
-  //
-  // tapPub - tap publisher, used by a 'sockets' app.
-  //   when requested by its serverID, all its packets are
-  //   published through it, to a channel named after serverId.
-  this.tapPub = null;
-  // tapSub - tap subscriber, used by a 'sockets' app.
-  //   a sockets app should treat this as an alternative method
-  //   for a client to connect and send in packets.
-  this.tapSub = null;
-
-  // eavesdropPub - eavesdrop sender, used by an 'admin' app.
-  //   publishes all packets from connected clients, on the
-  //   serverId's channel they're listening to.
-  this.eavesdropPub = null;
-  // eavesdropSub - eavesdrop listener, used by an 'admin' app.
-  //   receives all tapped packets, from any requested serverId.
-  //   routes to clients who've asked to tap the serverId's channel.
-  this.eavesdropSub = null;
-
-  // keyed by serverId, active taps
-  this.taps = {};
-  this.onTappedMessage = function() {};
-
   this.clientTimer = null;
   this.onClientSnapshot = function() {};
   this.currentSnapshot = {};
@@ -56,15 +30,6 @@ var Recorder = function(serverId, config, log) {
 
 
 Recorder.prototype = {
-
-  // TODO: tell other socket apps to start tapping
-  startTapping: function(serverId) {
-
-  },
-
-  // TODO: stop other socket apps from tapping
-  stopTapping: function(serverId, connection) {
-  },
 
   // save snapshot of system state every 5s
   startSnapshotting: function() {
@@ -146,14 +111,14 @@ Recorder.prototype = {
         sub = redis.createClient(this.port, this.host);
 
     ["error", "end", "connect", "ready"].forEach(function(message) {
-      client.on(message, function () {
-        self.log.warn("[recorder] client: " + message);
+      client.on(message, function(content) {
+        self.log.warn("[recorder] client: " + message + ", " + content);
       });
     });
 
     ["error", "end", "connect"].forEach(function(message) {
-      sub.on(message, function () {
-        self.log.warn("[recorder] sub: " + message);
+      sub.on(message, function(content) {
+        self.log.warn("[recorder] sub: " + message + ", " + content);
       });
     });
 
@@ -173,13 +138,6 @@ Recorder.prototype = {
 
     sub.on('ready', function() {
       self.log.warn("[recorder] sub: ready");
-      // not subscribing to anything now
-    });
-
-    // handles tap messages
-    sub.on('message', function(channel, message) {
-      if (taps[channel])
-        tapMessage(channel, message);
     });
 
     sub._heartbeat = setInterval(function() {
@@ -188,6 +146,14 @@ Recorder.prototype = {
 
     this.client = client;
     this.sub = sub;
+  },
+
+  subTo: function(channel) {
+    var self = this;
+    if (this.sub.ready)
+      this.sub.subscribe(channel);
+    else
+      this.sub.on('ready', function() {self.sub.subscribe(channel)})
   },
 
   turnOn: function() {

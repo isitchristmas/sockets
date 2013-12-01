@@ -4,7 +4,7 @@ function noop() {};
 
 var connections = {};
 
-// admin-only
+// used by admin app
 var Nsa = {
 
   // connections, keyed by serverId
@@ -12,11 +12,12 @@ var Nsa = {
 
   // when recording is turned on, all sub'd messages go through here
   openTaps: function() {
-    recorder.onTappedMessage = function(serverId, message) {
-      (Nsa.taps[serverId] || []).forEach(function(tap) {
+    recorder.sub.on('message', function(channel, message) {
+      console.log("Got message through tap for " + channel + ": " + message);
+      (Nsa.taps[channel] || []).forEach(function(tap) {
         tap.write(message);
       });
-    }
+    });
   },
 
   welcome: function(connection) {
@@ -26,31 +27,93 @@ var Nsa = {
       // plain-text identify message initiates connection
       if (message.slice(0,8) == "identify") {
         var serverId = message.slice(9);
+        var toChannel = "to:" + serverId;
+        var fromChannel = "from:" + serverId;
+
         connection.serverId = serverId;
+        connection.channel = toChannel;
+
         log.debug("Eavesdropper asking to tap: " + serverId);
 
         // TODO: what to do with invalid serverId?
 
         // store connection locally (absorb one-to-many here)
-        if (!Nsa.taps[serverId]) Nsa.taps[serverId] = [];
-        Nsa.taps[serverId].push(connection);
+        if (!Nsa.taps[fromChannel]) Nsa.taps[fromChannel] = [];
+        Nsa.taps[fromChannel].push(connection);
 
         // recorder.startTap(serverId, connection);
+        recorder.subTo("from:" + serverId);
 
-        // forward the new tap on so that the socket makes a fake connection
-        var tapMessage = JSON.stringify({_event: "tap"});
-        recorder.client.publish(connection.serverId, tapMessage);
+        // forward the new tap on so the socket app makes a fake connection
+        recorder.client.publish(connection.channel, message);
       }
 
       // send all normal traffic into the tap
       else {
         console.log("Tap publishing: " + message);
-        recorder.eavesdropPub.publish(connection.serverId, message);
+        recorder.client.publish(connection.channel, message);
       }
     });
   }
 
 };
+
+
+// used by sockets app to comply with Nsa tap orders
+// creates a fake connection that complies with the sockjs API
+var Compliance = {
+
+  // all tapped messages will be from clients connected via the tap
+  openTaps: function() {
+    recorder.subTo("to:" + serverId);
+
+    var connection;
+
+    recorder.sub.on('message', function(channel, message) {
+
+      if (message.slice(0,8) == "identify") {
+        var serverId = message.slice(9);
+        log.warn("Tap initiated.");
+
+        // TODO: create fake connection, call welcome() on it
+        connection = new CompliantConnection(recorder.client, serverId);
+        welcome(connection);
+      }
+
+      // TODO: elsif for exit message, trigger onClose
+
+      // TODO: pass the message on
+      else {
+        console.log("Tap receiving: " + message);
+        connection.onData(message);
+      }
+    });
+  }
+};
+
+
+// pretend to be a sockjs connection, but actually funnel traffic
+var CompliantConnection = function(client, serverId) {
+  this.client = client;
+  this.serverId = serverId;
+  this.channel = "from:" + serverId;
+
+  this.onClose = null;
+  this.onData = null;
+};
+
+CompliantConnection.prototype = {
+  on: function(event, callback) {
+    if (event == 'close') this.onClose = callback;
+    if (event == 'data') this.onData = callback;
+  },
+
+  write: function(data) {
+    console.log("Sending tapped message on " + this.channel + ": " + data);
+    this.client.publish(this.channel, data);
+  }
+};
+
 
 
 
@@ -231,12 +294,17 @@ sockets.installHandlers(server, {prefix: '/christmas'});
 app.get('/', function(req, res) {res.send("Up!");});
 
 // this can be used as a separate admin app
-if (admin)
+if (admin) {
   require('./admin')(app, config, manager, recorder);
+  Nsa.openTaps();
+}
+
 else {
   // recorder may be turned off and on
   (live.recorder == "on") ? recorder.turnOn() : recorder.turnOff();
   if (recorder.on) recorder.clearSnapshot();
+
+  Compliance.openTaps();
 
   // wipe the users clean on process start, the live ones will heartbeat in
   manager.clearUsers();
