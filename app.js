@@ -169,8 +169,7 @@ var serverId = (admin ? "admin" : utils.generateId(12)),
     recorder = require("./recorder")(serverId, config.recorder, log);
 
 // tapping system, uses recorder to funnel packets on command
-var calea = require("./calea")(welcome, send, serverId, recorder, log);
-
+var Calea = require("./calea")(welcome, send, serverId, recorder, log);
 
 // start everything
 
@@ -185,15 +184,11 @@ app.get('/', function(req, res) {res.send("Up!");});
 // this can be used as a separate admin app
 if (admin) {
   require('./admin')(app, config, manager, recorder);
-  calea.admin.openTaps();
+  Calea.admin.openTaps();
 }
 
 else {
-  // recorder may be turned off and on
-  (live.recorder == "on") ? recorder.turnOn() : recorder.turnOff();
-  if (recorder.on) recorder.clearSnapshot();
-
-  calea.sockets.openTaps();
+  Calea.sockets.openTaps();
 
   // wipe the users clean on process start, the live ones will heartbeat in
   manager.clearUsers();
@@ -237,6 +232,22 @@ manager.onConfig = function(target, key, value) {
     if (key == "snapshot") {
       recorder.turnOff();
       if (value == "on") recorder.turnOn();
+    }
+
+    else if (key == "tap") {
+      // mark taps as open for future connections
+      if (value == "on") {
+        log.warn("Turning on the tap.");
+        Calea.on = true;
+      }
+
+      // clear the taps, turn it off so future connections are rejected
+      else {
+        log.warn("Turning off the tap.");
+        Calea.on = false;
+        if (admin) Calea.admin.clearTaps();
+        else Calea.sockets.clearTaps();
+      }
     }
   }
 };
@@ -288,7 +299,15 @@ manager.loadConfig(function(initLive, err) {
   for (var key in initLive)
     live[key] = initLive[key];
 
+  // special initializations based on live values
+  //
+  // recorder may be turned off and on
+  (live.recorder == "on") ? recorder.turnOn() : recorder.turnOff();
+  if (recorder.on) recorder.clearSnapshot();
+  // set Calea to on/off
+  Calea.on = (live.tap == "on");
+
   log.info("Starting up with live config: " + JSON.stringify(live));
 
-  sockets.on('connection', admin ? calea.admin.welcome : welcome);
+  sockets.on('connection', admin ? Calea.admin.welcome : welcome);
 });

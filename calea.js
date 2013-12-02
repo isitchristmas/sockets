@@ -28,6 +28,13 @@ module.exports = function(welcome, send, serverId, recorder, log) {
 
     clearTaps: function() {
       Object.keys(Nsa.taps).forEach(function(channel) {
+
+        // close each connected client
+        Nsa.taps[channel].forEach(function(connection) {
+          connection.close();
+        });
+
+        // clear the key
         delete Nsa.taps[channel];
       });
     },
@@ -37,6 +44,9 @@ module.exports = function(welcome, send, serverId, recorder, log) {
       send('identify', connection, {});
 
       connection.on('data', function(message) {
+        // no tapping if Calea is off
+        if (!Calea.on) return;
+
         // initiate a connection via "identify:[serverId]"
         if (message.slice(0,8) == "identify") {
           var serverId = message.slice(9);
@@ -68,7 +78,8 @@ module.exports = function(welcome, send, serverId, recorder, log) {
         recorder.client.publish(connection.toChannel, "disconnect");
 
         // remove it from taps record
-        Nsa.taps[connection.fromChannel].splice(Nsa.taps[connection.fromChannel].indexOf(connection), 1);
+        if (Nsa.taps[connection.fromChannel])
+          Nsa.taps[connection.fromChannel].splice(Nsa.taps[connection.fromChannel].indexOf(connection), 1);
       });
     }
 
@@ -87,6 +98,9 @@ module.exports = function(welcome, send, serverId, recorder, log) {
       recorder.subTo("to:" + serverId);
 
       recorder.sub.on('message', function(channel, message) {
+        // accept no messages if Calea is off
+        if (!Calea.on) return;
+
         var command = message.slice(0,8);
 
         if (command == "identify") {

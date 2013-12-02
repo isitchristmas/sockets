@@ -22,7 +22,7 @@ var Recorder = function(serverId, config, log) {
 
   this.clientTimer = null;
   this.onClientSnapshot = function() {};
-  this.currentSnapshot = {};
+  this.currentSnapshot = [];
 
   this.log = log;
   this.init();
@@ -33,6 +33,9 @@ Recorder.prototype = {
 
   // save snapshot of system state every 5s
   startSnapshotting: function() {
+    // admin doesn't snapshot
+    if (serverId == "admin") return;
+
     var self = this;
     this.clientTimer = setInterval(function() {
       self.clientSnapshot.apply(self);
@@ -90,7 +93,7 @@ Recorder.prototype = {
 
     // send down the broadcasts
     this.log.debug("[recorder] beginning client snapshot");
-    self.currentSnapshot = [];
+    this.currentSnapshot = [];
     this.onClientSnapshot();
 
     setTimeout(function() {
