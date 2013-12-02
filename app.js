@@ -31,7 +31,8 @@ var Nsa = {
         var fromChannel = "from:" + serverId;
 
         connection.serverId = serverId;
-        connection.channel = toChannel;
+        connection.toChannel = toChannel;
+        connection.fromChannel = fromChannel;
 
         log.warn("Initiating tap for: " + serverId);
 
@@ -42,19 +43,22 @@ var Nsa = {
         recorder.subTo("from:" + serverId);
 
         // forward the new tap on so the socket app makes a fake connection
-        recorder.client.publish(connection.channel, message);
+        recorder.client.publish(connection.toChannel, message);
       }
 
       // send all normal traffic into the tap
       else {
         // console.log("Tap publishing: " + message);
-        recorder.client.publish(connection.channel, message);
+        recorder.client.publish(connection.toChannel, message);
       }
     });
 
     connection.on('close', function() {
       log.warn("Disconnected client, sending message to close tap.");
-      recorder.client.publish(connection.channel, "disconnect");
+      recorder.client.publish(connection.toChannel, "disconnect");
+
+      // remove it from tap record
+      Nsa.taps[connection.fromChannel].splice(Nsa.taps[connection.fromChannel].indexOf(connection), 1);
     });
   }
 
@@ -73,19 +77,24 @@ var Compliance = {
 
     recorder.sub.on('message', function(channel, message) {
       var command = message.slice(0,8);
+
       if (command == "identify") {
         var serverId = message.slice(9);
-        log.warn("Tap initiated.");
 
-        // TODO: create fake connection, call welcome() on it
+        // if a connection was already open, close and re-open
+        if (connection)
+          connection.close();
+
         connection = new CompliantConnection(recorder.client, serverId);
+
+        log.warn("Tap initiated.");
         welcome(connection);
       }
 
       // pass on the close message
       else if (command == "disconne") {
-        log.warn("Tap closed.")
-        connection.onClose();
+        connection.close();
+        connection = null;
       }
 
       // message to be blindly funneled
@@ -116,6 +125,11 @@ CompliantConnection.prototype = {
 
   write: function(data) {
     this.client.publish(this.channel, data);
+  },
+
+  close: function() {
+    log.warn("Tap closed.");
+    this.onClose();
   }
 };
 
