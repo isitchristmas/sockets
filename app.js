@@ -167,7 +167,9 @@ var serverId = (admin ? "admin" : utils.generateId(12)),
     log = utils.logger(serverId, config),
     manager = require("./manager")(serverId, config.manager, log),
     recorder = require("./recorder")(serverId, config.recorder, log);
-    calea = require("./calea")(welcome, send, serverId, recorder, log);
+
+// tapping system, uses recorder to funnel packets on command
+var calea = require("./calea")(welcome, send, serverId, recorder, log);
 
 
 // start everything
@@ -232,7 +234,7 @@ manager.onConfig = function(target, key, value) {
       value: value
     });
   } else if (target == "server") {
-    if (key == "recorder") {
+    if (key == "snapshot") {
       recorder.turnOff();
       if (value == "on") recorder.turnOn();
     }

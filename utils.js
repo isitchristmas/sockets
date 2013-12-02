@@ -98,7 +98,8 @@ module.exports = {
           heartbeat_interval: parseInt(process.env.LIVE_HEARTBEAT_INTERVAL, 10),
           ghost_max: parseInt(process.env.LIVE_GHOST_MAX, 10),
           ghost_duration: parseInt(process.env.LIVE_GHOST_DURATION, 10),
-          recorder: process.env.LIVE_RECORDER
+          snapshot: process.env.LIVE_SNAPSHOT,
+          tap: process.env.LIVE_TAP
         },
         logentries: process.env.LOGENTRIES
       };

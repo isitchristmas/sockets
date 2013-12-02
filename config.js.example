@@ -32,7 +32,9 @@ module.exports = {
       heartbeat_interval: 35000,
       mouse_rate: 20,
       ghost_duration: 2000,
-      ghost_max: 10
+      ghost_max: 10,
+      snapshot: 'on',
+      tap: 'on'
     },
 
     // set to a logentries API token to send logs there
@@ -65,7 +67,9 @@ module.exports = {
       heartbeat_interval: 35000, // heroku needs activity every < 55s
       mouse_rate: 20,
       ghost_duration: 2000,
-      ghost_max: 10
+      ghost_max: 10,
+      snapshot: 'on',
+      tap: 'on'
     },
 
     // set to a logentries API token to send logs there
