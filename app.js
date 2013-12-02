@@ -13,7 +13,7 @@ var Nsa = {
   // when recording is turned on, all sub'd messages go through here
   openTaps: function() {
     recorder.sub.on('message', function(channel, message) {
-      console.log("Got message through tap for " + channel + ": " + message);
+      // console.log("Got message through tap for " + channel + ": " + message);
       (Nsa.taps[channel] || []).forEach(function(tap) {
         tap.write(message);
       });
@@ -33,15 +33,12 @@ var Nsa = {
         connection.serverId = serverId;
         connection.channel = toChannel;
 
-        log.debug("Eavesdropper asking to tap: " + serverId);
-
-        // TODO: what to do with invalid serverId?
+        log.warn("Initiating tap for: " + serverId);
 
         // store connection locally (absorb one-to-many here)
         if (!Nsa.taps[fromChannel]) Nsa.taps[fromChannel] = [];
         Nsa.taps[fromChannel].push(connection);
 
-        // recorder.startTap(serverId, connection);
         recorder.subTo("from:" + serverId);
 
         // forward the new tap on so the socket app makes a fake connection
@@ -50,9 +47,14 @@ var Nsa = {
 
       // send all normal traffic into the tap
       else {
-        console.log("Tap publishing: " + message);
+        // console.log("Tap publishing: " + message);
         recorder.client.publish(connection.channel, message);
       }
+    });
+
+    connection.on('close', function() {
+      log.warn("Disconnected client, sending message to close tap.");
+      recorder.client.publish(connection.channel, "disconnect");
     });
   }
 
@@ -70,8 +72,8 @@ var Compliance = {
     var connection;
 
     recorder.sub.on('message', function(channel, message) {
-
-      if (message.slice(0,8) == "identify") {
+      var command = message.slice(0,8);
+      if (command == "identify") {
         var serverId = message.slice(9);
         log.warn("Tap initiated.");
 
@@ -80,11 +82,15 @@ var Compliance = {
         welcome(connection);
       }
 
-      // TODO: elsif for exit message, trigger onClose
+      // pass on the close message
+      else if (command == "disconne") {
+        log.warn("Tap closed.")
+        connection.onClose();
+      }
 
-      // TODO: pass the message on
+      // message to be blindly funneled
       else {
-        console.log("Tap receiving: " + message);
+        // console.log("Tap receiving: " + message);
         connection.onData(message);
       }
     });
@@ -109,7 +115,6 @@ CompliantConnection.prototype = {
   },
 
   write: function(data) {
-    console.log("Sending tapped message on " + this.channel + ": " + data);
     this.client.publish(this.channel, data);
   }
 };
