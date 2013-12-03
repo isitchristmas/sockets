@@ -90,6 +90,7 @@ var setUserHeartbeat = function(id) {
 // quickly shuttle mouse events through the system
 on('motion', rebroadcast);
 on('click', rebroadcast);
+on('scroll', rebroadcast);
 
 on('arrive', function(connection, data, original) {
   rebroadcast(connection, data, original);
