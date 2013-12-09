@@ -34,7 +34,7 @@ Recorder.prototype = {
   // save snapshot of system state every 5s
   startSnapshotting: function() {
     // admin doesn't snapshot
-    if (serverId == "admin") return;
+    if (this.serverId == "admin") return;
 
     var self = this;
     this.clientTimer = setInterval(function() {
