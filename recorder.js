@@ -115,13 +115,13 @@ Recorder.prototype = {
 
     ["error", "end", "connect", "ready"].forEach(function(message) {
       client.on(message, function(content) {
-        self.log.warn("[recorder] client: " + message + ", " + content);
+        self.log.warn("[recorder] client: " + message + (content ? ", " + content : ""));
       });
     });
 
     ["error", "end", "connect"].forEach(function(message) {
       sub.on(message, function(content) {
-        self.log.warn("[recorder] sub: " + message + ", " + content);
+        self.log.warn("[recorder] sub: " + message + (content ? ", " + content : ""));
       });
     });
 
