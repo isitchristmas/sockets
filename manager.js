@@ -225,13 +225,13 @@ Manager.prototype = {
 
     ["error", "end", "connect", "ready"].forEach(function(message) {
       client.on(message, function (content) {
-        log.warn("[manager] client: " + message + ", " + content);
+        log.warn("[manager] client: " + message + ", " + (content ? ", " + content : ""));
       });
     });
 
     ["error", "end", "connect"].forEach(function(message) {
       sub.on(message, function (content) {
-        log.warn("[manager] sub: " + message + ", " + content);
+        log.warn("[manager] sub: " + message + ", " + (content ? ", " + content : ""));
       });
     });
 
