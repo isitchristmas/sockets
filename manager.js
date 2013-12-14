@@ -104,7 +104,7 @@ Manager.prototype = {
   removeUser: function(userId, cause) {
     var self = this;
 
-    var key = [this.serverId, userId].join(":");
+    var key = [this.deployed, this.serverId, userId].join(":");
 
     this.client.hdel("users", key, function(err, reply) {
       //var severity = (cause == "timed out" ? "warn" : "info");
