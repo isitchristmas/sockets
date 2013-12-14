@@ -12,7 +12,8 @@
 var redis = require('redis'),
     dateFormat = require('dateformat'),
     os = require('os'),
-    time = require('time')(Date);
+    time = require('time')(Date),
+    utils = require("./utils");
 
 var Manager = function(serverId, config, log) {
   this.serverId = serverId;
@@ -20,6 +21,7 @@ var Manager = function(serverId, config, log) {
   this.password = config.password;
   this.host = config.host;
   this.port = config.port;
+  this.deployed = utils.deployed();
 
   this.onConfig = this.onCommand = this.onChat = function() {};
 
@@ -50,9 +52,9 @@ Manager.prototype = {
         var estTime = new Date(parseInt(valuePieces[5]));
         estTime.setTimezone("America/New_York");
 
-        var server = keyPieces[0];
+        var server = keyPieces[0] + ":" + keyPieces[1];
         var user = {
-          id: keyPieces[1],
+          id: keyPieces[2],
           country: valuePieces[0],
           transport: valuePieces[1],
           browser: valuePieces[2],
@@ -73,7 +75,7 @@ Manager.prototype = {
   addUser: function(connection, user, heartbeat) {
     var self = this;
 
-    var key = [this.serverId, connection._user.id].join(":");
+    var key = [this.deployed, this.serverId, connection._user.id].join(":");
     var value = [
       connection._user.country,
       user.transport,

@@ -1,6 +1,6 @@
 {
   "name": "admin",
-  "version": "1.1.13",
+  "version": "1.1.11",
   "private": true,
 
   "subdomain": "iic_admin",

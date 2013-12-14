@@ -35,11 +35,16 @@
 
   <% } else { %>
 
-    <% for(server in servers) { %>
-      [<%= server %>]
-      (<%= servers[server].length %>)
+    <% for(serverHost in servers) { %>
+      <%
+        var pieces = serverHost.split(":");
+        var host = pieces[0];
+        var server = pieces[1];
+      %>
+      [<%= host %>][<%= server %>]
+      (<%= servers[serverHost].length %>)
 
-      <% var stats = system[server]; %>
+      <% var stats = system[serverHost]; %>
       <% if (stats) { %>
         [<%= [stats.loadavg0, stats.loadavg1, stats.loadavg2].join(", ") %>] (<%= stats.rss %>M)
       <% } %>
@@ -51,19 +56,24 @@
     <table>
     <tr>
 
-    <% for(server in servers) { %>
+    <% for(serverHost in servers) { %>
+      <%
+        var pieces = serverHost.split(":");
+        var host = pieces[0];
+        var server = pieces[1];
+      %>
       <td>
 
-      [<%= server.slice(0,6) %>]
-      (<%= servers[server].length %>)
+      [<%= host %>][<%= server.slice(0,6) %>]
+      (<%= servers[serverHost].length %>)
 
-      <% var stats = system[server]; %>
+      <% var stats = system[serverHost]; %>
       <% if (stats) { %>
         [<%= [stats.loadavg0, stats.loadavg1, stats.loadavg2].join(", ") %>] (<%= stats.rss %>M)
       <% } %>
 
-      <% for (i in servers[server]) { %>
-        <% var user = servers[server][i]; %>
+      <% for (i in servers[serverHost]) { %>
+        <% var user = servers[serverHost][i]; %>
 
         <br/><%= dateFormat(user.time, "HH:MM") %> <%= user.country %> <%= user.transport %> <%= user.browser %>-<%= user.version %>-<%= user.os %>
       <% } %>

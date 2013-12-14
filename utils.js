@@ -105,5 +105,9 @@ module.exports = {
       };
     } else
       return require('./config')[env];
+  },
+
+  deployed: function() {
+    return process.env.DEPLOYED || "LH";
   }
 };
