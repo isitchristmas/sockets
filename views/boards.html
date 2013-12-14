@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+
+  <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+
+</head>
+<body>
+
+<div class="debug">
+
+</div>
+
+
+<script type="text/javascript">
+
+$(function() {
+
+  $.get("/snapshot", {
+    admin: "<%= config.admin %>"
+  }, function(data) {
+    $(".debug").text(data);
+  });
+
+});
+
+</script>
+
+</body>
+</html>

@@ -21,15 +21,30 @@ module.exports = function(app, config, manager, recorder) {
     });
   };
 
+  // static view uses same admin password to grab/render snapshot from admin app
+  var boards = function(req, res) {
+    var password = req.param("admin");
+    if (config.admin && (password != config.admin))
+      return (res.status(403).send("What?"));
+
+    res.render('boards', {
+      req: req,
+      config: config
+    });
+  };
+
   var snapshot = function(req, res) {
     var password = req.param("admin");
     if (config.admin && (password != config.admin))
       return (res.status(403).send("What?"));
 
     res.header('Content-Type', 'application/json');
-    recorder.getSnapshot(function(snapshot) {res.send(snapshot || "{}")});
+    recorder.getSnapshot(function(snapshot) {
+      res.send(snapshot || "{}");
+    });
   };
 
   app.get('/snapshot', snapshot);
   app.get('/dashboard', dashboard);
+  app.get('/boards', boards);
 }
