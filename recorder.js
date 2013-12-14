@@ -66,8 +66,8 @@ Recorder.prototype = {
     var self = this;
 
     if (!this.on) {
-      if (serverId) return "[]";
-      else return "{}";
+      if (serverId) return callback("[]");
+      else return callback("{}");
     }
 
     this.client.hgetall("current_snapshot", function(err, reply) {
