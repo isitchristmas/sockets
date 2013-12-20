@@ -39,7 +39,9 @@ module.exports = function(app, config, manager, recorder) {
       return (res.status(403).send("What?"));
 
     res.header('Content-Type', 'application/json');
+    console.log("Starting snapshot request");
     recorder.getSnapshot(function(snapshot) {
+      console.log("Serving snapshot request");
       res.send(snapshot || "{}");
     });
   };
