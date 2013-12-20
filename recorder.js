@@ -5,7 +5,8 @@
   m = require('./recorder')(id, c.recorder, require("./utils").logger(id, c))
 */
 
-var redis = require('redis');
+var redis = require('redis'),
+    dateFormat = require('dateformat');
 
 var Recorder = function(serverId, config, log) {
   this.serverId = serverId;
@@ -33,8 +34,10 @@ Recorder.prototype = {
 
   // save snapshot of system state every 5s
   startSnapshotting: function() {
-    // admin doesn't snapshot
-    if (this.serverId == "admin") return;
+
+    // admin doesn't snapshot, rather it archives snapshots
+    if (this.serverId == "admin")
+      return this.startArchiving();
 
     var self = this;
     this.clientTimer = setInterval(function() {
@@ -48,6 +51,35 @@ Recorder.prototype = {
 
   clearSnapshot: function() {
     this.client.del("current_snapshot");
+  },
+
+  // only the admin app does this - every time a current_snapshot
+  // is published, snap a shot of it.
+  startArchiving: function() {
+    var self = this;
+    this.subTo("client_snapshot");
+    this.sub.on("message", function(channel, message) {
+      if (channel == "client_snapshot")
+        self.archiveSnapshot.apply(self, [message]);
+    });
+  },
+
+  // fetch the current_snapshot, parse it, save it
+  archiveSnapshot: function(message) {
+    var self = this;
+
+    this.client.hgetall("current_snapshot", function(err, reply) {
+      if (err) {
+        self.rlog(self, err, reply, "getting just-published snapshot");
+        return;
+      }
+
+      // freeze into string, add to snapshot archive
+      var time = dateFormat(new Date().getTime(), "yyyymmddHHMMss");
+      var snap = [time, JSON.stringify(reply)]
+      self.log.debug("[recorder] archived snapshot for " + time);
+      self.client.lpush("snapshots", JSON.stringify(snap));
+    });
   },
 
   snapshotData: function(connection, data) {
