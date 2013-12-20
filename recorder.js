@@ -71,7 +71,7 @@ Recorder.prototype = {
       country: connection._user.country,
       x: data.x,
       y: data.y,
-      angle: data.angle
+      a: data.angle
     });
   },
 
@@ -106,8 +106,6 @@ Recorder.prototype = {
         self.rlog(self, err, reply, "getting just-published snapshot");
         return;
       }
-
-      console.log(reply);
 
       var snaps = {};
       for (var server in reply)
