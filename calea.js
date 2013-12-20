@@ -20,6 +20,7 @@ module.exports = function(welcome, send, serverId, recorder, log) {
     // when tapping is turned on, all sub'd messages go through here.
     openTaps: function() {
       recorder.sub.on('message', function(channel, message) {
+        // naturally ignores the recorder's "client_snapshot" message
         (Nsa.taps[channel] || []).forEach(function(tap) {
           tap.write(message);
         });

@@ -301,10 +301,11 @@ manager.loadConfig(function(initLive, err) {
     live[key] = initLive[key];
 
   // special initializations based on live values
-  //
+
   // recorder may be turned off and on
   (live.snapshot == "on") ? recorder.turnOn() : recorder.turnOff();
   if (recorder.on) recorder.clearSnapshot();
+
   // set Calea to on/off
   Calea.on = (live.tap == "on");
 
