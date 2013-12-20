@@ -74,11 +74,15 @@ Recorder.prototype = {
         return;
       }
 
+      var snaps = {};
+      for (var server in reply)
+        snaps[server] = JSON.parse(reply[server])
+
       // freeze into string, add to snapshot archive
       var time = dateFormat(new Date().getTime(), "yyyymmddHHMMss");
-      var snap = [time, JSON.stringify(reply)]
-      self.log.debug("[recorder] archived snapshot for " + time);
+      var snap = [time, snaps];
       self.client.lpush("snapshots", JSON.stringify(snap));
+      self.log.debug("[recorder] archived snapshot for " + time);
     });
   },
 
