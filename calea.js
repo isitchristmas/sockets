@@ -20,7 +20,7 @@ module.exports = function(welcome, send, serverId, recorder, log) {
     // when tapping is turned on, all sub'd messages go through here.
     openTaps: function() {
       recorder.sub.on('message', function(channel, message) {
-        // naturally ignores the recorder's "client_snapshot" message
+        // naturally ignores the recorder's "get_snapshot" message
         (Nsa.taps[channel] || []).forEach(function(tap) {
           tap.write(message);
         });
@@ -99,6 +99,9 @@ module.exports = function(welcome, send, serverId, recorder, log) {
       recorder.subTo("to:" + serverId);
 
       recorder.sub.on('message', function(channel, message) {
+        // ignore snapshotting
+        if (channel == "get_snapshot") return;
+
         // accept no messages if Calea is off
         if (!Calea.on) return;
 

@@ -192,6 +192,9 @@ if (admin) {
 else {
   Calea.sockets.openTaps();
 
+  // socket app always listens for snapshot requests
+  recorder.listen();
+
   // wipe the users clean on process start, the live ones will heartbeat in
   manager.clearUsers();
   manager.logNewServer();
@@ -304,7 +307,8 @@ manager.loadConfig(function(initLive, err) {
   // special initializations based on live values
 
   // recorder may be turned off and on (only used by admin)
-  (live.snapshot == "on") ? recorder.turnOn() : recorder.turnOff();
+  if (admin)
+    (live.snapshot == "on") ? recorder.turnOn() : recorder.turnOff();
 
   // set Calea to on/off
   Calea.on = (live.tap == "on");

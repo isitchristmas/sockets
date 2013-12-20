@@ -22,6 +22,8 @@ var Recorder = function(serverId, config, log) {
   this.client = null;
 
   this.clientTimer = null;
+
+  // used by a sockets app to snap/save its own piece of the snapshot
   this.onClientSnapshot = function() {};
   this.currentSnapshot = [];
 
@@ -32,40 +34,71 @@ var Recorder = function(serverId, config, log) {
 
 Recorder.prototype = {
 
-  // save snapshot of system state every 5s
+  // admin kicks off snapshot of system state every 5s,
+  // and archives 2s after kick-off of snapshot.
   startSnapshotting: function() {
-
-    // admin doesn't snapshot, rather it archives snapshots
-    if (this.serverId == "admin")
-      return this.startArchiving();
 
     var self = this;
     this.clientTimer = setInterval(function() {
-      self.clientSnapshot.apply(self);
+      // kick off snapshot, which each socket app will do immediately
+      self.client.publish("get_snapshot", "now");
+
+      // socket apps leave 1s window for connected clients to ring in.
+      // thus, leave socket apps another 1s to write the snapshot,
+      // before archiving the current snapshot.
+      setTimeout(function() {
+        self.archiveSnapshot.apply(self);
+      }, 2000);
     }, 5000);
   },
 
+  // only done to admin, will also stop archiving
   stopSnapshotting: function() {
     clearInterval(this.clientTimer);
   },
 
+  // called by admin on stop/start of snapshotting
   clearSnapshot: function() {
     this.client.del("current_snapshot");
   },
 
-  // only the admin app does this - every time a current_snapshot
-  // is published, snap a shot of it.
-  startArchiving: function() {
-    var self = this;
-    this.subTo("client_snapshot");
-    this.sub.on("message", function(channel, message) {
-      if (channel == "client_snapshot")
-        self.archiveSnapshot.apply(self, [message]);
+  // called by socket app when connected client rings in
+  snapshotData: function(connection, data) {
+    if (!this.currentSnapshot) return;
+
+    this.currentSnapshot.push({
+      id: connection._user.id,
+      country: connection._user.country,
+      x: data.x,
+      y: data.y,
+      angle: data.angle
     });
   },
 
+  // gets kicked off by admin every 5s -- asks connected clients to
+  // report their current x/y and angle.
+  // maintains a 1s window to receive answers from everyone.
+  clientSnapshot: function() {
+    var self = this;
+
+    // send down the broadcasts
+    this.log.debug("[recorder] beginning my client snapshot");
+    this.currentSnapshot = [];
+    this.onClientSnapshot();
+
+    setTimeout(function() {
+      // freeze and store snapshot collected in the last 1s
+      var snapshot = JSON.stringify(self.currentSnapshot);
+      self.currentSnapshot = null;
+
+      self.client.hset("current_snapshot", self.serverId, snapshot);
+      self.log.debug("[recorder] saved my client snapshot.");
+    }, 1000);
+  },
+
+  // only the admin app does this, every 5s,
   // fetch the current_snapshot, parse it, save it
-  archiveSnapshot: function(message) {
+  archiveSnapshot: function() {
     var self = this;
 
     this.client.hgetall("current_snapshot", function(err, reply) {
@@ -74,6 +107,8 @@ Recorder.prototype = {
         return;
       }
 
+      console.log(reply);
+
       var snaps = {};
       for (var server in reply)
         snaps[server] = JSON.parse(reply[server])
@@ -81,23 +116,13 @@ Recorder.prototype = {
       // freeze into string, add to snapshot archive
       var time = dateFormat(new Date().getTime(), "yyyymmddHHMMss");
       var snap = [time, snaps];
-      self.client.lpush("snapshots", JSON.stringify(snap));
+      self.client.rpush("snapshots", JSON.stringify(snap));
       self.log.debug("[recorder] archived snapshot for " + time);
     });
   },
 
-  snapshotData: function(connection, data) {
-    if (this.currentSnapshot) {
-      this.currentSnapshot.push({
-        id: connection._user.id,
-        country: connection._user.country,
-        x: data.x,
-        y: data.y
-      });
-    }
-  },
-
-  // get the frozen JSON string of the current snapshot
+  // get the frozen JSON string of the current snapshot,
+  // used by admin.js /snapshot endpoint.
   getSnapshot: function(callback) {
     var self = this;
 
@@ -112,28 +137,6 @@ Recorder.prototype = {
 
       return callback(reply);
     });
-  },
-
-  // gets kicked off every 5s -- asks all clients to report their current x/y.
-  // maintains a 1s window to receive answers from everyone.
-  // then when it's done, publishes to a channel.
-  clientSnapshot: function() {
-    var self = this;
-
-    // send down the broadcasts
-    this.log.debug("[recorder] beginning client snapshot");
-    this.currentSnapshot = [];
-    this.onClientSnapshot();
-
-    setTimeout(function() {
-      // freeze and store snapshot collected in the last 1s
-      var snapshot = JSON.stringify(self.currentSnapshot);
-      self.currentSnapshot = null;
-
-      self.client.hset("current_snapshot", self.serverId, snapshot);
-      self.client.publish("client_snapshot", "done");
-      self.log.debug("[recorder] saved client snapshot.");
-    }, 1000);
   },
 
   init: function() {
@@ -188,6 +191,17 @@ Recorder.prototype = {
       this.sub.on('ready', function() {self.sub.subscribe(channel)})
   },
 
+  // listen for snapshot requests, only used by socket
+  listen: function() {
+    var self = this;
+    this.sub.subscribe("get_snapshot");
+    this.sub.on('message', function(channel, message) {
+      if (channel == "get_snapshot")
+        self.clientSnapshot.apply(self);
+    })
+  },
+
+  // turn on and off, only used by admin
   turnOn: function() {
     this.on = true;
     this.clearSnapshot();
