@@ -117,8 +117,9 @@ on('here', function(connection, data) {
   }
 });
 
+// socket app always snapshots data, only admin uses on/off
 on('pong', function(connection, data) {
-  if (recorder.on) recorder.snapshotData(connection, data);
+  recorder.snapshotData(connection, data);
 });
 
 // TODO: lock down naming a bit here
@@ -283,7 +284,7 @@ manager.onCommand = function(command, args) {
   });
 };
 
-// kick off a client snapshot request to all connected clients
+// socket app can kick off a client snapshot request to all connected clients
 recorder.onClientSnapshot = function() {
   broadcast("ping", null, {});
 };
@@ -302,9 +303,8 @@ manager.loadConfig(function(initLive, err) {
 
   // special initializations based on live values
 
-  // recorder may be turned off and on
+  // recorder may be turned off and on (only used by admin)
   (live.snapshot == "on") ? recorder.turnOn() : recorder.turnOff();
-  if (recorder.on) recorder.clearSnapshot();
 
   // set Calea to on/off
   Calea.on = (live.tap == "on");

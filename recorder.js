@@ -190,6 +190,7 @@ Recorder.prototype = {
 
   turnOn: function() {
     this.on = true;
+    this.clearSnapshot();
     this.startSnapshotting();
   },
 
