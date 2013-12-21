@@ -43,12 +43,12 @@ Recorder.prototype = {
       // kick off snapshot, which each socket app will do immediately
       self.client.publish("get_snapshot", "now");
 
-      // socket apps leave 1s window for connected clients to ring in.
-      // thus, leave socket apps another 1s to write the snapshot,
+      // socket apps leave 2s window for connected clients to ring in.
+      // thus, leave socket apps another 2s to write the snapshot,
       // before archiving the current snapshot.
       setTimeout(function() {
         self.archiveSnapshot.apply(self);
-      }, 2000);
+      }, 4000);
     }, 5000);
   },
 
@@ -93,7 +93,7 @@ Recorder.prototype = {
 
       self.client.hset("current_snapshot", self.serverId, snapshot);
       self.log.debug("[recorder] saved my client snapshot.");
-    }, 1000);
+    }, 2000);
   },
 
   // only the admin app does this, every 5s,
