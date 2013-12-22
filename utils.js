@@ -70,7 +70,7 @@ module.exports = {
   },
 
   rejectText: function(text) {
-    return badwords.test(text);
+    return (text.search(badwords) >= 0);
   },
 
   // if DEPLOYMENT=heroku, use environment variables to populate
