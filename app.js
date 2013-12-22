@@ -131,7 +131,7 @@ on('rename', function(connection, data) {
   if (!utils.rejectText(data.name))
     connection._user.name = name;
 
-  send('rename', connection, {name: name});
+  send('rename', connection, {name: connection._user.name});
 });
 
 on('chat', function(connection, data) {
