@@ -122,7 +122,6 @@ on('pong', function(connection, data) {
   recorder.snapshotData(connection, data);
 });
 
-// TODO: lock down naming a bit here
 on('rename', function(connection, data) {
   if (!data.name) return;
   var name = data.name.slice(0,20);

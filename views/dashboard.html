@@ -44,7 +44,7 @@
       [<%= host %>][<%= server %>]
       (<%= servers[serverHost].length %>)
 
-      <% var stats = system[serverHost]; %>
+      <% var stats = system[server]; %>
       <% if (stats) { %>
         [<%= [stats.loadavg0, stats.loadavg1, stats.loadavg2].join(", ") %>] (<%= stats.rss %>M)
       <% } %>
@@ -67,7 +67,7 @@
       [<%= host %>][<%= server.slice(0,6) %>]
       (<%= servers[serverHost].length %>)
 
-      <% var stats = system[serverHost]; %>
+      <% var stats = system[server]; %>
       <% if (stats) { %>
         [<%= [stats.loadavg0, stats.loadavg1, stats.loadavg2].join(", ") %>] (<%= stats.rss %>M)
       <% } %>
