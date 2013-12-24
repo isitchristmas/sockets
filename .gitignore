@@ -3,3 +3,4 @@
 /*.txt
 *.rdb
 /package.json.*
+.dotcloud

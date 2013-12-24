@@ -1,0 +1,8 @@
+www:
+  type: nodejs
+  approot: .
+  environment:
+    PORT: 8080
+    NODE_ENV: production
+  config:
+    node_version: v0.8.x
