@@ -14,6 +14,8 @@
 </head>
 <body>
 
+<% var serverHosts = Object.keys(servers).sort(); %>
+
 <% if (servers == null) { %>
 
   <h2>Error connecting to Redis.</h2>
@@ -35,7 +37,7 @@
 
   <% } else { %>
 
-    <% for(serverHost in servers) { %>
+    <% serverHosts.forEach(function(serverHost) { %>
       <%
         var pieces = serverHost.split(":");
         var host = pieces[0];
@@ -49,14 +51,14 @@
         [<%= [stats.loadavg0, stats.loadavg1, stats.loadavg2].join(", ") %>] (<%= stats.rss %>M)
       <% } %>
       <br/>
-    <% } %>
+    <% }); %>
 
     <br/>
     <% var mod = 1; %>
     <table>
     <tr>
 
-    <% for(serverHost in servers) { %>
+    <% serverHosts.forEach(function(serverHost) { %>
       <%
         var pieces = serverHost.split(":");
         var host = pieces[0];
@@ -82,7 +84,7 @@
         </tr><tr>
       <% } %>
       <% mod += 1 %>
-    <% } %>
+    <% }); %>
 
   <% } %>
 
