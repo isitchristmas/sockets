@@ -4,5 +4,6 @@ www:
   environment:
     PORT: 8080
     NODE_ENV: production
+    DEPLOYED: DC
   config:
     node_version: v0.8.x
