@@ -4,3 +4,4 @@
 *.rdb
 /package.json.*
 .dotcloud
+.python-version
