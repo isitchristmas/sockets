@@ -59,6 +59,8 @@ var broadcast = function(event, from, object) {
 //   so: the 'id' field needs to have been set by the sending client.
 var rebroadcast = function(connection, data, original) {
   var from = connection._user.id;
+  if (from != data.id) return;
+
   for (id in connections) {
     if (id != from)
       connections[id].write(original);
