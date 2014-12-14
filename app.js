@@ -117,11 +117,6 @@ on('here', function(connection, data) {
   }
 });
 
-// socket app always snapshots data, only admin uses on/off
-on('pong', function(connection, data) {
-  recorder.snapshotData(connection, data);
-});
-
 on('rename', function(connection, data) {
   if (!data.name) return;
   var name = data.name.slice(0,20);
@@ -166,11 +161,7 @@ var config = utils.config(env),
 // full server ID is 12 chars long, only first 6 shared with client
 var serverId = (admin ? "admin" : utils.generateId(12)),
     log = utils.logger(serverId, config),
-    manager = require("./manager")(serverId, config.manager, log),
-    recorder = require("./recorder")(serverId, config.recorder, log);
-
-// tapping system, uses recorder to funnel packets on command
-var Calea = require("./calea")(welcome, send, serverId, recorder, log);
+    manager = require("./manager")(serverId, config.manager, log);
 
 // start everything
 
@@ -183,21 +174,12 @@ sockets.installHandlers(server, {prefix: '/christmas'});
 app.get('/', function(req, res) {res.send("Up!");});
 
 // this can be used as a separate admin app
-if (admin) {
-  require('./admin')(app, config, manager, recorder);
-  Calea.admin.openTaps();
-}
+if (admin)
+  require('./admin')(app, config, manager);
 
-else {
-  Calea.sockets.openTaps();
-
-  // socket app always listens for snapshot requests
-  recorder.listen();
-
-  // wipe the users clean on process start, the live ones will heartbeat in
+// wipe the users clean on process start, the live ones will heartbeat in
+else
   manager.clearUsers();
-  manager.logNewServer();
-}
 
 // turn on CORS
 app.all('*', function(req, res, next) {
@@ -234,26 +216,7 @@ manager.onConfig = function(target, key, value) {
       value: value
     });
   } else if (target == "server") {
-    if (key == "snapshot") {
-      recorder.turnOff();
-      if (value == "on") recorder.turnOn();
-    }
-
-    else if (key == "tap") {
-      // mark taps as open for future connections
-      if (value == "on") {
-        log.warn("Turning on the tap.");
-        Calea.on = true;
-      }
-
-      // clear the taps, turn it off so future connections are rejected
-      else {
-        log.warn("Turning off the tap.");
-        Calea.on = false;
-        if (admin) Calea.admin.clearTaps();
-        else Calea.sockets.clearTaps();
-      }
-    }
+    // nothing targeting server right now
   }
 };
 
@@ -287,11 +250,6 @@ manager.onCommand = function(command, args) {
   });
 };
 
-// socket app can kick off a client snapshot request to all connected clients
-recorder.onClientSnapshot = function() {
-  broadcast("ping", null, {});
-};
-
 
 // get current starting configuration and wait for users
 log.info("Loading config from manager, and beginning.");
@@ -303,17 +261,7 @@ manager.loadConfig(function(initLive, err) {
 
   for (var key in initLive)
     live[key] = initLive[key];
-
-  // special initializations based on live values
-
-  // recorder may be turned off and on (only used by admin)
-  if (admin)
-    (live.snapshot == "on") ? recorder.turnOn() : recorder.turnOff();
-
-  // set Calea to on/off
-  Calea.on = (live.tap == "on");
-
   log.info("Starting up with live config: " + JSON.stringify(live));
 
-  sockets.on('connection', admin ? Calea.admin.welcome : welcome);
+  sockets.on('connection', welcome);
 });
