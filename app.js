@@ -171,7 +171,7 @@ var app = express(),
 var sockets = sockjs.createServer({log: log});
 sockets.installHandlers(server, {prefix: '/christmas'});
 
-app.get('/', function(req, res) {res.send("Up!");});
+app.get('/', function(req, res) {res.send(admin ? "Admin!" : "Up!");});
 
 // this can be used as a separate admin app
 if (admin)
