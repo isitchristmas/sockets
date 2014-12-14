@@ -2,7 +2,6 @@
 
 // manager - redis login details (required)
 // live - default values for live config values (required)
-// logentries: token for logentries.com account (optional)
 
 module.exports = {
 
@@ -19,12 +18,6 @@ module.exports = {
       password: null
     },
 
-    recorder: {
-      port: 6379,
-      host: "localhost",
-      password: null
-    },
-
     // will be overridden by values in redis
     live: {
       chat: "true",
@@ -35,10 +28,7 @@ module.exports = {
       ghost_max: 10,
       snapshot: 'on',
       tap: 'on'
-    },
-
-    // set to a logentries API token to send logs there
-    logentries: null
+    }
   },
 
   production: {
@@ -54,12 +44,6 @@ module.exports = {
       password: null
     },
 
-    recorder: {
-      port: 6379,
-      host: "localhost",
-      password: null
-    },
-
     // will be overridden by values in redis
     live: {
       chat: "true",
@@ -70,9 +54,6 @@ module.exports = {
       ghost_max: 10,
       snapshot: 'on',
       tap: 'on'
-    },
-
-    // set to a logentries API token to send logs there
-    logentries: null
+    }
   }
 }

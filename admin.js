@@ -2,9 +2,9 @@
 
 var dateFormat = require('dateformat');
 
-module.exports = function(app, config, manager, recorder) {
+module.exports = function(app, config, manager) {
 
-  var dashboard = function(req, res) {
+  app.get('/dashboard', function(req, res) {
     var password = req.param("admin");
     if (config.admin && (password != config.admin))
       return (res.status(403).send("What?"));
@@ -19,34 +19,5 @@ module.exports = function(app, config, manager, recorder) {
         });
       });
     });
-  };
-
-  // static view uses same admin password to grab/render snapshot from admin app
-  var boards = function(req, res) {
-    var password = req.param("admin");
-    if (config.admin && (password != config.admin))
-      return (res.status(403).send("What?"));
-
-    res.render('boards', {
-      req: req,
-      config: config
-    });
-  };
-
-  var snapshot = function(req, res) {
-    var password = req.param("admin");
-    if (config.admin && (password != config.admin))
-      return (res.status(403).send("What?"));
-
-    res.header('Content-Type', 'application/json');
-    console.log("Starting snapshot request");
-    recorder.getSnapshot(function(snapshot) {
-      console.log("Serving snapshot request");
-      res.send(snapshot || "{}");
-    });
-  };
-
-  app.get('/snapshot', snapshot);
-  app.get('/dashboard', dashboard);
-  app.get('/boards', boards);
+  });
 }

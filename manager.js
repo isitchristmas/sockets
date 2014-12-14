@@ -142,8 +142,8 @@ Manager.prototype = {
     minutes = (minutes < 10) ? ("0" + minutes) : ("" + minutes); // 0-prefix
     var span = date + dateFormat(now.getTime(), "HH") + minutes;
 
-    ["all", date, span].forEach(function(prefix) {
-      self.client.incr(prefix + ":reconnects");
+    ["all", date, span].forEach(function(suffix) {
+      self.client.incr("reconnects:" + suffix);
     });
   },
 
@@ -168,28 +168,26 @@ Manager.prototype = {
       user.os = user.os || "unknown";
       user.transport = user.transport || "unknown";
       user.country = user.country || "unknown";
+      user.version = user.version || "unknown";
     }
 
-    ["all:", date + ":"].forEach(function(prefix) {
-      self.client.sadd(prefix + "browsers", user.browser);
-      self.client.sadd(prefix + "oses", user.os);
-      self.client.sadd(prefix + "transports", user.transport);
-      self.client.sadd(prefix + "countries", user.country);
+    // chrome and firefox can be generally assumed to be up to date,
+    // with no major differences between major versions. (so nice!)
+    var browser;
+    if ((user.browser == "chrome") || (user.browser == "firefox"))
+      browser = user.browser;
 
-      [
-        "visitors",
-        ["c", user.country].join("-"),
-        ["ct", user.country, user.transport].join("-"),
-        ["t", user.transport].join("-"),
-        ["o", user.os].join("-"),
-        ["b", user.browser].join("-"),
-        ["bo", user.browser, user.os].join("-"),
-        ["bt", user.browser, user.transport].join("-"),
-        ["bv", user.browser, user.version].join("-"),
-        ["bvt", user.browser, user.version, user.transport].join("-")
-      ].forEach(function(key) {
-        self.client.incr(prefix + key);
-      })
+    // safari, opera, and IE have monolithic, significant updates
+    else
+      browser = [user.browser, user.version].join("-");
+
+    [
+      "connections",
+      ["t", user.transport].join("-"),
+      ["b", browser].join("-"),
+      ["bt", browser, user.transport].join("-")
+    ].forEach(function(key) {
+      self.client.incr(key);
     });
 
   },
@@ -201,17 +199,6 @@ Manager.prototype = {
 
     ["all:", date + ":"].forEach(function(prefix) {
       self.client.incr(prefix + "timeouts");
-    });
-  },
-
-  // new servers register on boot, helps give me an idea of how often servers
-  // run out of memory, crash, and restart
-  logNewServer: function() {
-    var self = this;
-    var date = dateFormat(Date.now(), "mmdd");
-
-    ["all:", date + ":"].forEach(function(prefix) {
-      self.client.sadd(prefix + "servers", self.serverId);
     });
   },
 

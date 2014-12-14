@@ -3,10 +3,6 @@
   "version": "1.1.23",
   "private": true,
 
-  "subdomain": "iic_sockets",
-  "domains": [
-
-  ],
   "engines": {"node": "0.10.x"},
 
   "scripts": {

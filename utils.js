@@ -6,6 +6,7 @@ var severities = {error: 1, warn: 1, info: 2, debug: 3};
 
 module.exports = {
 
+
   generateId: function(limit) {
     var rand = new Buffer(15); // multiple of 3 for base64
     if (!rand.writeInt32BE) {
@@ -17,7 +18,6 @@ module.exports = {
     if (crypto.randomBytes) {
       crypto.randomBytes(12).copy(rand);
     } else {
-      // not secure for node 0.4
       [0, 4, 8].forEach(function(i) {
         rand.writeInt32BE(Math.random() * Math.pow(2, 32) | 0, i);
       });
@@ -34,28 +34,10 @@ module.exports = {
     // default to error msgs only
     var log_level = (process.env.LOG || config.log || 1);
 
-    var func;
-
-    if (config.logentries) {
-      var logger = require('node-logentries').logger({
-        token: config.logentries
-      });
-      var winston = require('winston');
-      logger.winston(winston, {});
-      winston.handleExceptions(new winston.transports.LogentriesLogger({}));
-
-      func = function(severity, message) {
-        if (log_level >= severities[severity]) {
-          var msg = "[" + serverId + "] " + message;
-          (winston[severity] || winston.error)(msg);
-        }
-      }
-    } else {
-      func = function(severity, message) {
-        if (log_level >= severities[severity])
-          console.log("[" + serverId + "] " + message);
-      }
-    }
+    var func = function(severity, message) {
+      if (log_level >= severities[severity])
+        console.log("[" + serverId + "] " + message);
+    };
 
     // shortcuts: log.warn, log.info, etc.
     ["warn", "info", "debug", "error"].forEach(function(severity) {
@@ -69,6 +51,7 @@ module.exports = {
     return names[Math.floor(Math.random() * names.length)];
   },
 
+  // right now, just use the badwords lib
   rejectText: function(text) {
     return (text.search(badwords) >= 0);
   },
@@ -87,26 +70,19 @@ module.exports = {
           host: process.env.MANAGER_HOST,
           password: process.env.MANAGER_PASSWORD
         },
-        recorder: {
-          port: parseInt(process.env.RECORDER_PORT, 10),
-          host: process.env.RECORDER_HOST,
-          password: process.env.RECORDER_PASSWORD
-        },
         live: {
           chat: process.env.LIVE_CHAT,
           death_interval: parseInt(process.env.LIVE_DEATH_INTERVAL, 10),
           heartbeat_interval: parseInt(process.env.LIVE_HEARTBEAT_INTERVAL, 10),
           ghost_max: parseInt(process.env.LIVE_GHOST_MAX, 10),
-          ghost_duration: parseInt(process.env.LIVE_GHOST_DURATION, 10),
-          snapshot: process.env.LIVE_SNAPSHOT,
-          tap: process.env.LIVE_TAP
-        },
-        logentries: process.env.LOGENTRIES
+          ghost_duration: parseInt(process.env.LIVE_GHOST_DURATION, 10)
+        }
       };
     } else
       return require('./config')[env];
   },
 
+  // which host is this? (LH=localhost)
   deployed: function() {
     return process.env.DEPLOYED || "LH";
   }
