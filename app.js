@@ -216,7 +216,7 @@ manager.onConfig = function(target, key, value) {
       value: value
     });
   } else if (target == "server") {
-    // nothing targeting server right now
+    // nothing targeting server right now that requires additional events
   }
 };
 
