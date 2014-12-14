@@ -1,10 +1,48 @@
 ## Real-time sockets for isitchristmas.com
 
-This app is the socket server for flag/mouse streaming on [isitchristmas.com](https://isitchristmas.com).
-
-It's a Node app, using Express 3.
+This app is the socket server for flag/mouse streaming on [isitchristmas.com](https://isitchristmas.com). This server **does not run** isitchristmas.com -- for that code, see [github.com/isitchristmas/web](https://github.com/isitchristmas/web).
 
 This service is meant to be run on a number of parallel nodes, e.g. 30 Heroku dynos or Nodejitsu drones or whatever. It's okay to run on a weak server, and each service can handle something like ~50 active users.
+
+### Setup
+
+* Install [Redis](http://redis.io).
+* Install [Node](http://nodejs.org).
+* Copy the template config file:
+
+```bash
+cp config.js.example config.js
+```
+
+* Run the app at at `http://localhost:3000`:
+
+```bash
+node app.js
+```
+
+#### Deploying to Heroku
+
+The recommended development/deployment path for Heroku is:
+
+* Copy the template environment to `.env` and fill it out:
+
+```bash
+cp env.example .env
+```
+
+* Test out by running the app with `foreman`, with the port you want:
+
+```bash
+foreman start -p 3000
+```
+
+* (Recommended) Install the Heroku config plugin and sync your `.env` to the server:
+
+```bash
+heroku config:push -o
+```
+
+There's a `Procfile` in this repo already that will run `node app.js`.
 
 ### Control Server
 
