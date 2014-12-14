@@ -1,5 +1,5 @@
 /config.js
-/.env
+/.env*
 /*.txt
 *.rdb
 /package.json.*
