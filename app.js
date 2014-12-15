@@ -195,7 +195,6 @@ app.all('*', function(req, res, next) {
 app.enable('trust proxy');
 app.engine('.html', require('ejs').__express);
 app.set('view engine', 'html');
-app.use(express.favicon(__dirname + '/public/favicon.ico'));
 server.listen(port, function(){
   log.warn("Express " + app.settings.env + " server listening on port " + port);
 });
