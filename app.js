@@ -152,7 +152,7 @@ var express = require('express'),
     sockjs = require('sockjs');
 
 var util = require('util');
-var utils = require("./utils"),
+var utils = require("./lib/utils"),
     env = (process.env.NODE_ENV || "development"),
     admin = (process.env.IIC_ADMIN == "true");
 
@@ -163,7 +163,7 @@ var config = utils.config(env),
 // full server ID is 12 chars long, only first 6 shared with client
 var serverId = (admin ? "admin" : utils.generateId(12)),
     log = utils.logger(serverId, config),
-    manager = require("./manager")(serverId, config.manager, log);
+    manager = require("./lib/manager")(serverId, config.manager, log);
 
 // start everything
 
@@ -177,7 +177,7 @@ app.get('/', function(req, res) {res.send(admin ? "Admin!" : "Up!");});
 
 // this can be used as a separate admin app
 if (admin)
-  require('./admin')(app, config, manager);
+  require('./lib/admin')(app, config, manager);
 
 // wipe the users clean on process start, the live ones will heartbeat in
 else
