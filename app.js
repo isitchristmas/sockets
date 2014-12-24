@@ -146,6 +146,16 @@ on('chat', function(connection, data) {
   });
 });
 
+// client explicitly requested the last X chat messages
+on('recent', function(connection, data) {
+  if (live.chat != "true") return;
+  manager.recentChats(function(chats) {
+    if (chats == null) return;
+
+    send('recent', connection, {chats: chats});
+  });
+});
+
 
 var express = require('express'),
     http = require('http'),
@@ -220,9 +230,10 @@ manager.onConfig = function(target, key, value) {
   }
 };
 
-manager.onChat = function(id, name, country, message) {
+manager.onChat = function(id, time, name, country, message) {
   broadcast("chat", null, {
     id: id,
+    time: time,
     name: name,
     country: country,
     message: message
