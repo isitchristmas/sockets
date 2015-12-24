@@ -5,3 +5,4 @@
 /package.json.*
 .dotcloud
 .python-version
+/node_modules
