@@ -79,7 +79,7 @@
       <% for (i in servers[serverHost]) { %>
         <% var user = servers[serverHost][i]; %>
 
-        <br/><%= dateFormat(user.time, "HH:MM") %> <%= user.country %> <%= user.transport %> <%= user.browser %>-<%= user.version %>-<%= user.os %>
+        <br/><%= dateFormat(user.time, "HH:MM") %> <%= user.country %> <%= user.browser %>-<%= user.version %>-<%= user.os %>
       <% } %>
       </td>
       <% if (mod % 3 == 0) { %>
