@@ -19,7 +19,7 @@ module.exports = {
     },
 
     slack: {
-      token: null,
+      tokens: [],
       hooks: []
     },
 
@@ -48,7 +48,7 @@ module.exports = {
     },
 
     slack: {
-      token: null,
+      tokens: [],
       hooks: []
     },
 
