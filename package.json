@@ -14,7 +14,8 @@
     "ejs": "*",
     "dateformat": "*",
     "time": "*",
-    "badwords": "*"
+    "badwords": "*",
+    "request": "*"
   },
   "bundledDependencies": [
     "node-logentries"
