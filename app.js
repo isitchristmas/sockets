@@ -167,14 +167,20 @@ var utils = require("./lib/utils"),
     env = (process.env.NODE_ENV || "development"),
     admin = (process.env.IIC_ADMIN == "true");
 
+
 var config = utils.config(env),
     live = (config.live || {}),
     port = parseInt(process.env.PORT || config.port || 80);
+
 
 // full server ID is 12 chars long, only first 6 shared with client
 var serverId = (admin ? "admin" : utils.generateId(12)),
     log = utils.logger(serverId, config),
     manager = require("./lib/manager")(serverId, config.manager, log);
+
+// if we have Slack hooks configured, wire them up in the manager
+if (config.slack.hooks && (config.slack.hooks.length > 0))
+  manager.slack = config.slack;
 
 // start everything
 
