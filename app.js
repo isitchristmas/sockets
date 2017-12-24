@@ -178,9 +178,6 @@ var serverId = (admin ? "admin" : utils.generateId(12)),
     log = utils.logger(serverId, config),
     manager = require("./lib/manager")(serverId, config.manager, log);
 
-// if we have Slack hooks configured, wire them up in the manager
-if (config.slack.hooks && (config.slack.hooks.length > 0))
-  manager.slack = config.slack;
 
 // start everything
 
@@ -189,6 +186,9 @@ var app = express(),
 
 var sockets = sockjs.createServer({log: log});
 sockets.installHandlers(server, {prefix: '/christmas'});
+
+// used for receiving Slack posts
+app.use(express.urlencoded());
 
 app.get('/', function(req, res) {res.send(admin ? "Admin!" : "Up!");});
 
@@ -199,6 +199,18 @@ if (admin)
 // wipe the users clean on process start, the live ones will heartbeat in
 else
   manager.clearUsers();
+
+
+// if we have Slack hooks configured, wire them up in the manager
+// and enable /christmas listening
+if (config.slack.hooks && (config.slack.hooks.length > 0)) {
+  // allows chat to post to Slack
+  manager.slack = config.slack;
+
+  // allows Slack to post to chat
+  require('./lib/slack')(app, config, manager);
+}
+
 
 // turn on CORS
 app.all('*', function(req, res, next) {

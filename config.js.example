@@ -18,6 +18,11 @@ module.exports = {
       password: null
     },
 
+    slack: {
+      token: null,
+      hooks: []
+    },
+
     // will be overridden by values in redis
     live: {
       chat: "true",
@@ -40,6 +45,11 @@ module.exports = {
       port: 6379,
       host: "localhost",
       password: null
+    },
+
+    slack: {
+      token: null,
+      hooks: []
     },
 
     // will be overridden by values in redis
