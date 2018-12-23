@@ -6,16 +6,16 @@
     "start": "node app.js"
   },
   "dependencies": {
-    "express": "3.x",
-    "redis": "*",
-    "sockjs": "*",
-    "node-logentries": "0.0.2",
-    "winston": "*",
-    "ejs": "*",
-    "dateformat": "*",
-    "time": "*",
     "badwords": "*",
-    "request": "*"
+    "dateformat": "^3.0.3",
+    "ejs": "^2.6.1",
+    "express": "3.x",
+    "node-logentries": "0.0.2",
+    "redis": "*",
+    "request": "^2.88.0",
+    "sockjs": "*",
+    "time": "*",
+    "winston": "^3.1.0"
   },
   "bundledDependencies": [
     "node-logentries"
