@@ -13,7 +13,7 @@
     "winston": "*",
     "ejs": "*",
     "dateformat": "*",
-    "time": "*",
+    "time": "github:riyadshauk/node-time",
     "badwords": "*",
     "request": "*"
   },
