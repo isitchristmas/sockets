@@ -6,7 +6,7 @@
     "start": "node app.js"
   },
   "dependencies": {
-    "express": "3.x",
+    "express": "4.x",
     "redis": "*",
     "sockjs": "*",
     "node-logentries": "0.0.2",
