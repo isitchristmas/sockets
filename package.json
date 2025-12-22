@@ -19,5 +19,8 @@
   },
   "bundledDependencies": [
     "node-logentries"
-  ]
+  ],
+  "engines": {
+    "node": "11.x"
+  }
 }
