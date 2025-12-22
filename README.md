@@ -45,6 +45,12 @@ heroku config:push -o
 
 There's a `Procfile` in this repo already that will run `node app.js`.
 
+##### Dealing with Node versions and Python builds
+
+As of this writing, this app needs an old version of Node - 11.5. This is now in `package.json` in the `engines` field.
+
+Additionally, at least one package requires a binary build with `node-gyp` that depends on Python being available.
+
 ### Control Server
 
 Every node connects to a Redis server, and the administrator with access to the Redis server can issue commands that get sent to all server nodes.
