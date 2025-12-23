@@ -6,8 +6,8 @@ This service is meant to be run on a number of parallel nodes, e.g. 30 Heroku dy
 
 ### Setup
 
-* Install [Redis](http://redis.io).
-* Install [Node](http://nodejs.org).
+* Install [Redis](https://redis.io).
+* Install [Node](https://nodejs.org).
 
 * Copy the template config file:
 
