@@ -157,7 +157,7 @@ on('chat', function(connection, data) {
     if (answer || (data.message == connection._user.lastMessage) || utils.rejectText(data.message))
       onBannedChat(user.id, user.name, user.country, data.message);
     else
-      manager.newChat(user.id, time, user.name, user.country, data.message);
+      manager.newChat(user.id, time, user.name, user.country, data.message, user.promoted);
 
     connection._user.lastMessage = data.message;
   });
@@ -265,13 +265,14 @@ manager.onConfig = function(target, key, value) {
   }
 };
 
-manager.onChat = function(id, time, name, country, message) {
+manager.onChat = function(id, time, name, country, message, promoted) {
   broadcast("chat", null, {
     id: id,
     time: time,
     name: name,
     country: country,
-    message: message
+    message: message,
+    promoted: promoted
   });
 };
 
