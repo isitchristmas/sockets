@@ -127,7 +127,7 @@ on('rename', function(connection, data) {
   name = utils.asciiOnly(name);
   name = name.trim();
 
-  var rejected = utils.rejectText(name) || utils.ownerOnly(name);
+  var rejected = (!name) || utils.rejectText(name) || utils.ownerOnly(name);
   
   // still send down the name message even if it got rejected.
   // and allow the owner to override name restrictions.
