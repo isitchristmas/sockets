@@ -121,10 +121,15 @@ on('here', function(connection, data) {
 
 on('rename', function(connection, data) {
   if (!data.name) return;
-  var name = data.name.slice(0,20).trim();
 
-  // still send down the name message even if it got rejected
-  if (!utils.rejectText(data.name))
+  var name = data.name;
+  name = name.slice(0,20);
+  name = utils.asciiOnly(name);
+  name = name.trim();
+
+  // check the original and sanitized version of the name.
+  // still send down the name message even if it got rejected.
+  if (!utils.rejectText(data.name) && !utils.rejectText(name))
     connection._user.name = name;
 
   send('rename', connection, {name: connection._user.name});
