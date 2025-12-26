@@ -19,10 +19,11 @@ var welcome = function(connection) {
   });
 
   connection.on('data', function(message) {
+    if (!message) return;
     if (message.length > 1000) return; // 1KB limit
 
     try {
-      var data = JSON.parse(message);
+      var data = JSON.parse(message) || {};
       (events[data._event] || noop)(connection, data, message);
     } catch (e) {
       log.error("Error parsing message - " + message);
