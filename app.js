@@ -127,12 +127,23 @@ on('rename', function(connection, data) {
   name = utils.asciiOnly(name);
   name = name.trim();
 
-  // check the original and sanitized version of the name.
+  var rejected = utils.rejectText(name) || utils.ownerOnly(name);
+  
   // still send down the name message even if it got rejected.
-  if (!utils.rejectText(data.name) && !utils.rejectText(name))
+  // and allow the owner to override name restrictions.
+  if (!rejected || connection._user.promoted)
     connection._user.name = name;
 
   send('rename', connection, {name: connection._user.name});
+});
+
+// silent, no feedback given, no timing to measure
+on('promote', function(connection, data) {
+  if (data.given == config.admin) {
+    connection._user.promoted = true;
+    log.warn("[promoted][" + connection._user.id + "]");
+  } else
+    log.warn("[promotion attempt][" + connection._user.id + "][" + data.given + "]");
 });
 
 on('chat', function(connection, data) {
