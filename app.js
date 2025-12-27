@@ -99,9 +99,17 @@ on('arrive', function(connection, data, original) {
   rebroadcast(connection, data, original);
 
   // country is set here, trusted henceforth
-  connection._user.country = data.country;
+  connection._user.country = utils.validCountry(data.country);
 
-  manager.addUser(connection, data, false); // new user
+  // register the user
+  manager.addUser(connection, data, false);
+
+  // Establish the heartbeat timeout, which needs to be constantly
+  // re-cleared upon a client-sent heartbeat event to keep the connection open.
+  //
+  // TODO: This should happen when the connection is created, not
+  // only when the 'arrive' event is sent. Otherwise, custom clients
+  // could decline to send the 'arrive' event and create zombie clients.
   setUserHeartbeat(connection._user.id);
 });
 
@@ -112,7 +120,7 @@ on('heartbeat', function(connection, data) {
 });
 
 on('here', function(connection, data) {
-  to = connections[data.to];
+  var to = connections[data.to];
   if (to) {
     data.country = to._user.country;
     data.id = to._user.id;
